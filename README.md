@@ -79,14 +79,6 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-## Publishing to GitHub Pages
-
-1. Push this repository to GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Source**, choose **Deploy from a branch**.
-4. Select branch `main` and folder `/ (root)`, then **Save**.
-5. Wait a minute or two. Your site appears at `https://YOUR-USERNAME.github.io/filament-spec-index/`.
-
 Pages serves `index.html` from the repository root automatically, which is why the file is named that way.
 
 Then update the demo link at the top of this README.
