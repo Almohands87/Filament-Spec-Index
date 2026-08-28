@@ -1,0 +1,64 @@
+name: Material test data
+description: Submit measured mechanical test results for a filament
+title: "[data] "
+labels: ["measured-data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing. Raw numbers with imperfect methodology are still welcome —
+        describe what you did and the data will be labelled accordingly.
+        Please don't round or smooth your results; the spread is information.
+  - type: input
+    id: material
+    attributes:
+      label: Material
+      description: Brand and exact grade, not just the polymer family
+      placeholder: Polymaker Fiberon PA6-CF20
+    validations:
+      required: true
+  - type: dropdown
+    id: orientation
+    attributes:
+      label: Specimen orientation
+      options: ["XY (flat, load along layers)", "Z (upright, load across layers)", "Both"]
+    validations:
+      required: true
+  - type: input
+    id: standard
+    attributes:
+      label: Test standard
+      placeholder: ISO 527 / ASTM D638 / custom rig (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Results
+      description: Include every specimen, not just the average
+      placeholder: |
+        Tensile XY: 104, 109, 101, 107, 103 MPa (n=5, mean 104.8, sd 3.1)
+        Tensile Z:   36,  34,  38,  35 MPa (n=4, mean 35.8, sd 1.7)
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: Print settings
+      placeholder: |
+        Machine:      Bambu X1C, hardened 0.4 mm
+        Nozzle / bed: 290 °C / 100 °C
+        Chamber:      55 °C
+        Layer height: 0.2 mm
+        Walls:        4
+        Infill:       100% rectilinear
+        Speed:        60 mm/s
+        Dried:        yes, 80 °C for 8 h
+        Annealed:     no
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Failure mode, surface defects, moisture exposure, spool age
