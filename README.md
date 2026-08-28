@@ -2,7 +2,7 @@
 
 A material selection tool for FDM 3D printing. 33 filaments with mechanical, thermal and structural properties, plus a requirements-driven finder that ranks materials for a specific part and service environment.
 
-**[→ Open the tool](https://YOUR-USERNAME.github.io/filament-spec-index/)**
+**[→ Open the tool](https://almohands87.github.io/Filament-Spec-Index/)**
 
 Single HTML file. No build step, no framework, no dependencies beyond a web font.
 
