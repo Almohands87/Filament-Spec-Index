@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Filament Spec Index — material selection for FDM manufacturing</title>
+<meta name="description" content="Mechanical, thermal and structural property database for 33 FDM filaments, with a requirements-driven material finder.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0A0D13; --panel:#141A24; --panel2:#1B2331; --panel3:#232D3D;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --text:#E7EBF1; --dim:#8795A8; --dim2:#5C6A7D;
+  --t1:#3D93D6; --t2:#35C6A5; --t3:#F2A63C; --t4:#F2603C;
+  --amor:#8A9BF0; --cryst:#F0894A; --blockc:#B78AE8;
+  --ok:#4ECB8F; --warn:#F2B84C; --bad:#F2705B;
+  --dsp:'Space Grotesk',system-ui,-apple-system,sans-serif;
+  --body:'Inter',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--void);color:var(--text);font-family:var(--body);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:840px;margin:0 auto;padding-bottom:64px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--t2);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4,h5{font-family:var(--dsp);margin:0;font-weight:600;letter-spacing:-.01em}
+p{margin:0 0 10px}
+ul{margin:0;padding-left:16px}
+
+/* ---------- header: the ramp is the legend for the whole page ---------- */
+.hd{padding:30px 18px 0}
+.eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim2)}
+.hd h1{font-size:27px;letter-spacing:-.025em;margin:9px 0 6px;line-height:1.1}
+.hd .sub{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.02em}
+.ramp{height:6px;border-radius:3px;margin:20px 0 7px;
+  background:linear-gradient(90deg,var(--t1) 0%,var(--t2) 33%,var(--t3) 66%,var(--t4) 100%);
+  box-shadow:0 0 26px -6px rgba(242,96,60,.55)}
+.ramp-ax{display:flex;justify-content:space-between;font-family:var(--mono);
+  font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2)}
+
+/* ---------- tabs ---------- */
+.tabs{position:sticky;top:0;z-index:20;padding:16px 18px 12px;
+  background:linear-gradient(180deg,var(--void) 72%,rgba(10,13,19,0));}
+.tabs-in{display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r);padding:3px}
+.tab{flex:1;padding:9px 4px;border-radius:7px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--dim);transition:.18s}
+.tab[aria-selected="true"]{background:var(--panel3);color:var(--text);font-weight:600}
+.view{padding:4px 18px 0;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ---------- shared ---------- */
+.lede{color:var(--dim);font-size:13.5px;margin-bottom:20px}
+.lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dim2);margin-bottom:9px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.hint{font-family:var(--mono);font-size:9.5px;color:var(--dim2);margin-top:7px;line-height:1.5}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:7px 11px;border:1px solid var(--line);background:var(--panel);border-radius:7px;
+  font-family:var(--mono);font-size:11px;color:var(--dim);transition:.16s;white-space:nowrap}
+.chip:hover{border-color:var(--line2);color:var(--text)}
+.chip[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--void);font-weight:600}
+.rule{height:1px;background:var(--line);margin:26px 0}
+.empty{padding:20px;background:var(--panel);border:1px dashed var(--line2);
+  border-radius:var(--r);color:var(--dim);font-size:13.5px}
+.count{font-family:var(--mono);font-size:10px;color:var(--dim2);margin:2px 0 14px}
+
+/* ---------- finder form ---------- */
+.fq{margin-bottom:19px}
+.fq-h{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.fq-n{font-family:var(--mono);font-size:9px;color:var(--dim2);flex:none;
+  border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.fq-q{font-family:var(--dsp);font-size:13px;font-weight:600;letter-spacing:-.01em}
+
+/* ---------- ranked results ---------- */
+.res-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  flex-wrap:wrap;margin-bottom:14px}
+.res{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:9px;overflow:hidden;transition:.18s}
+.res:hover{border-color:var(--line2)}
+.res-1{border-color:var(--line2)}
+.res-top{display:flex;align-items:center;gap:13px;width:100%;padding:14px 15px;text-align:left}
+.res-n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--dim2);
+  flex:none;width:20px}
+.res-1 .res-n{color:var(--text)}
+.res-b{flex:1;min-width:0}
+.res-name{font-family:var(--dsp);font-size:16px;font-weight:600;letter-spacing:-.015em;display:block}
+.res-meta{font-family:var(--mono);font-size:10px;color:var(--dim);display:block;margin:3px 0 8px}
+.res-bar{display:block;height:3px;background:var(--panel3);border-radius:2px;overflow:hidden}
+.res-bar i{display:block;height:100%;border-radius:2px;width:0;
+  animation:grow .7s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes grow{to{width:var(--w)}}
+.res-ar{color:var(--dim2);flex:none;font-size:18px;line-height:1}
+.res-why{padding:0 15px 13px 48px}
+.wy,.wn{font-size:12.5px;line-height:1.5;padding:3px 0 3px 17px;position:relative}
+.wy{color:#A9DDC2}.wn{color:#E8CE94}
+.wy:before,.wn:before{position:absolute;left:0;font-family:var(--mono);font-weight:600;font-size:11px}
+.wy:before{content:"+";color:var(--ok)}
+.wn:before{content:"!";color:var(--warn);left:3px}
+.blocked{margin-top:26px}
+.brow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;
+  border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px}
+.brow em{color:var(--dim2);font-style:normal;text-align:right}
+
+/* ---------- charts ---------- */
+.chart{margin-bottom:28px}
+.chart h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;font-weight:600}
+.chart h4 em{font-style:normal;text-transform:none;letter-spacing:0;color:var(--dim2);font-size:10px}
+.bar{margin-bottom:15px}
+.bar-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.bar-l{font-family:var(--mono);font-size:11.5px}
+.bar-v{font-family:var(--mono);font-size:11.5px;font-weight:600}
+.bar-v em{font-style:normal;font-weight:400;color:var(--dim2);font-size:9.5px}
+.trk{position:relative;height:16px;background:var(--panel);border:1px solid var(--line);
+  border-radius:5px;overflow:hidden}
+.f-ghost,.f-solid{position:absolute;left:0;top:0;height:100%;width:0;
+  animation:grow .8s cubic-bezier(.22,1,.36,1) forwards}
+.f-ghost{opacity:.24}
+.f-solid{border-radius:0 3px 3px 0}
+.tick{position:absolute;top:0;bottom:0;width:1px;background:var(--text);opacity:0;
+  animation:tick .8s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes tick{to{opacity:.9;left:var(--w)}}
+.bar-s{font-family:var(--mono);font-size:9.5px;color:var(--dim2);margin-top:5px}
+.scatter{width:100%;height:auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r);display:block}
+
+/* ---------- classes view ---------- */
+.thesis{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px;margin-bottom:14px}
+.thesis p{font-size:13px;color:var(--dim);margin:0}
+.thesis p b{color:var(--text);font-weight:500}
+.cmp{display:flex;flex-direction:column;gap:11px;margin-bottom:16px}
+.col{background:var(--panel);border:1px solid var(--line);border-top:2px solid;
+  border-radius:var(--r);padding:15px}
+.col h5{font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase}
+.col .csub{font-family:var(--mono);font-size:9.5px;color:var(--dim2);margin:4px 0 11px}
+.col li{font-size:12.5px;margin-bottom:6px;color:var(--dim)}
+.col li b{color:var(--text);font-weight:500}
+.cex{font-family:var(--mono);font-size:9.5px;color:var(--dim2);margin-top:11px;
+  padding-top:10px;border-top:1px solid var(--line)}
+.pair{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.pair div{flex:1;min-width:158px;font-family:var(--mono);font-size:10.5px;
+  background:var(--panel2);border-radius:7px;padding:9px 11px}
+.grp{margin-bottom:16px}
+.grp-h{display:flex;align-items:center;gap:8px;padding-bottom:9px;
+  border-bottom:1px solid var(--line);margin-bottom:3px}
+.dot{width:7px;height:7px;border-radius:50%;flex:none}
+.grp-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.grp-f{font-family:var(--mono);font-size:9.5px}
+.grp-n{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--dim2)}
+.mini{display:block;width:100%;text-align:left;padding:11px 2px;
+  border-bottom:1px solid var(--line);transition:.15s}
+.mini:hover{padding-left:7px}
+.mini-n{font-family:var(--dsp);font-size:13.5px;font-weight:600;display:block}
+.mini-d{font-family:var(--mono);font-size:9.5px;color:var(--dim2);margin-top:2px;display:block}
+
+/* ---------- datasheet cards ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  margin-bottom:9px;overflow:hidden;transition:.18s}
+.card:hover{border-color:var(--line2)}
+.card-t{display:flex;justify-content:space-between;align-items:flex-start;gap:13px;
+  width:100%;padding:15px;text-align:left}
+.card-n{font-family:var(--dsp);font-size:16.5px;font-weight:600;letter-spacing:-.015em}
+.card-f{font-size:11.5px;color:var(--dim2);margin:3px 0 9px}
+.tgs{display:flex;gap:5px;flex-wrap:wrap}
+.tg{font-family:var(--mono);font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 7px;border-radius:5px;border:1px solid}
+.crt{font-family:var(--mono);font-size:17px;color:var(--dim2);flex:none;line-height:1}
+.card-b{padding:0 15px 18px;border-top:1px solid var(--line)}
+.spec{margin:15px 0 20px}
+.sr{display:grid;grid-template-columns:1fr auto;gap:1px 12px;padding:8px 0;
+  border-bottom:1px solid var(--line)}
+.sk{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.sv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+.sn{font-family:var(--mono);font-size:9px;color:var(--dim2);grid-column:1/-1;text-align:right}
+.blk{margin-bottom:20px}
+.blk p{font-size:12.5px;color:var(--dim)}
+.blk p b{color:var(--text);font-weight:500}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px}
+.pg span{font-family:var(--mono);font-size:11px;display:flex;justify-content:space-between;
+  gap:7px;border-bottom:1px solid var(--line);padding-bottom:7px}
+.pg b{color:var(--dim2);font-weight:400;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase}
+.mtr{display:inline-flex;gap:3px;align-items:center}
+.mtr i{width:5px;height:5px;border-radius:50%;background:var(--panel3)}
+.mtr i.on{background:var(--text)}
+.anl{background:rgba(242,166,60,.07);border:1px solid rgba(242,166,60,.22);
+  border-radius:var(--r);padding:13px 14px}
+.anl-no{background:var(--panel2);border-color:var(--line)}
+.warnt{color:#E8A99B}
+.pc{display:flex;flex-direction:column;gap:18px;margin-bottom:20px}
+.pc li{font-size:12.5px;margin-bottom:7px;color:var(--dim)}
+.lab-p{color:var(--ok)}.lab-c{color:var(--bad)}
+.tags{margin-bottom:18px}
+.tl{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:8px}
+.tl b{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--dim2);margin-right:4px}
+.tl em{font-style:normal;font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:5px;
+  background:rgba(78,203,143,.1);color:#8FD9B4;border:1px solid rgba(78,203,143,.2)}
+.tl-no em{background:rgba(242,112,91,.1);color:#E8A99B;border-color:rgba(242,112,91,.2)}
+.verdict{font-size:12.5px;color:var(--dim);background:var(--panel2);border-radius:var(--r);
+  padding:14px;margin-bottom:20px;line-height:1.6}
+.br{padding:11px 0;border-top:1px solid var(--line)}
+.br-n{font-family:var(--mono);font-size:10.5px}
+.br-n b{font-weight:600}
+.br-v{font-family:var(--mono);font-size:10.5px;margin-top:3px;color:var(--text)}
+.br-m{font-family:var(--mono);font-size:9px;color:var(--dim2);margin-top:3px}
+.conf{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;padding:3px 7px;
+  border-radius:5px;border:1px solid}
+.c-high{background:rgba(78,203,143,.1);color:#8FD9B4;border-color:rgba(78,203,143,.25)}
+.c-medium{background:rgba(242,184,76,.1);color:#E8CE94;border-color:rgba(242,184,76,.25)}
+.c-low{background:rgba(242,112,91,.1);color:#E8A99B;border-color:rgba(242,112,91,.25)}
+
+.ft{padding:26px 18px 0;margin-top:22px;border-top:1px solid var(--line)}
+.ft p{font-size:11.5px;color:var(--dim2);line-height:1.65}
+.ft b{color:var(--dim);font-weight:500}
+
+
+/* ---------- language toggle + RTL ---------- */
+.langbtn{position:absolute;top:30px;inset-inline-end:18px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;padding:7px 12px;border:1px solid var(--line2);border-radius:7px;
+  background:var(--panel);color:var(--dim);transition:.16s}
+.langbtn:hover{color:var(--text);border-color:var(--text)}
+.hd{position:relative}
+[dir="rtl"] body,[dir="rtl"] .app{direction:rtl}
+[dir="rtl"] .res-why{padding-left:15px;padding-right:48px}
+[dir="rtl"] .wy:before,[dir="rtl"] .wn:before{left:auto;right:0}
+[dir="rtl"] .wy,[dir="rtl"] .wn{padding-left:0;padding-right:17px}
+[dir="rtl"] .sv,[dir="rtl"] .sn,[dir="rtl"] .brow em{text-align:left}
+[dir="rtl"] .res-ar{transform:scaleX(-1)}
+[dir="rtl"] .mini:hover{padding-left:2px;padding-right:7px}
+[dir="rtl"] ul{padding-left:0;padding-right:16px}
+[dir="rtl"] .f-solid{border-radius:3px 0 0 3px}
+[dir="rtl"] .trk .f-ghost,[dir="rtl"] .trk .f-solid{left:auto;right:0}
+[dir="rtl"] .tick{left:auto}
+[dir="rtl"] .scatter{direction:ltr}
+[dir="rtl"] .hd-t,[dir="rtl"] .eyebrow,[dir="rtl"] .lab{letter-spacing:0}
+[dir="rtl"] .tab{letter-spacing:0}
+/* Arabic numerals and Latin acronyms stay LTR inside RTL text */
+.ltr{direction:ltr;display:inline-block;unicode-bidi:isolate}
+@media(min-width:660px){
+  .pc{flex-direction:row}.pc>div{flex:1}
+  .pg{grid-template-columns:1fr 1fr 1fr}
+  .cmp{flex-direction:row}.col{flex:1}
+  .hd h1{font-size:34px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .f-ghost,.f-solid,.res-bar i{width:var(--w)!important}
+  .tick{opacity:.9!important;left:var(--w)!important}
+  .view{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hd">
+    <div class="eyebrow">FDM material selection</div>
+    <h1>Filament Spec Index</h1>
+    <div class="sub">33 materials · structure, thermal, mechanical · Prusa · Bambu Lab · Polymaker · Siraya Tech</div>
+    <div class="ramp"></div>
+    <div class="ramp-ax"><span>190 °C</span><span>colour = extrusion temperature</span><span>450 °C</span></div>
+  </header>
+  <nav class="tabs"><div class="tabs-in" id="tabs" role="tablist"></div></nav>
+  <main id="app"></main>
+  <footer class="ft">
+    <div class="lab">How to read this</div>
+    <p>Values are manufacturer datasheet typicals normalised to <b>XY tensile strength (ISO 527)</b>, not design allowables. Bambu Lab's public guide publishes <b>bending</b> strength; those figures are converted at roughly 1.45× and shown separately with the original test method labelled.</p>
+    <p>Tg and Tm come from DSC data where a manufacturer publishes it, otherwise from polymer literature. A blank Tm means the polymer is amorphous and has no melting point — it softens progressively above Tg.</p>
+    <p>The Z-axis figure is a derate, not a measurement. Layer adhesion depends on chamber temperature, layer height, nozzle material and speed as much as on the polymer. Print a coupon before trusting a load path.</p>
+  </footer>
+</div>
+<script>
+const M = [
+  /* ---------- AMORPHOUS · UNFILLED ---------- */
+  {
+    id: "petg", name: "PETG", full: "Glycol-modified PET", fam: "Everyday",
+    struct: "Amorphous", fiber: "None", tg: 78, tm: null, clarity: "Clear-capable",
+    nozzle: [230, 260], bed: [70, 85], fan: [30, 60], minHotend: 250,
+    fanNote: "Too much fan kills layer bonding; too little causes drooping. 40% is a good start.",
+    enc: 0, hard: false, dry: "Recommended", anneal: null,
+    glue: "Cyanoacrylate or 2-part epoxy", glueAvoid: "No practical solvent weld — PETG resists most solvents",
+    tensile: 47, tLo: 36, tHi: 52, zRatio: 0.75, modulus: 1750, impact: 5, elong: 12,
+    hdt: 73, density: 1.27, cost: [22, 32], diff: 2, uv: 3, chem: 4, tough: 4, conf: "high",
+    pros: ["Best layer adhesion of the easy materials — Z stays close to XY", "Yields and stretches instead of snapping", "Optically clear in natural grades, and genuinely water and oil resistant"],
+    cons: ["Only ~60% of PLA's stiffness", "Strings persistently and bridges poorly", "Bonds so hard to smooth PEI it can tear the sheet — use glue stick as a release agent"],
+    use: ["Functional brackets", "Enclosures", "Clear covers", "Outdoor fittings"],
+    avoid: ["Stiffness-critical thin walls", "Fine detail", "Sustained >75 °C"],
+    note: "The glycol modification exists specifically to block crystallisation. That is why PETG is clear, low-warp and unaffected by annealing — there is no crystal phase to develop.",
+    brands: [
+      { b: "Prusa", p: "Prusament PETG", v: "±0.02 mm tolerance · high Z-strength in category", m: "batch-traceable QC" },
+      { b: "Bambu", p: "PETG Basic", v: "32 MPa XY / 28 MPa Z · 1460 MPa · Tg 68 °C · Tc: N/A", m: "ISO 527 — 'Tc N/A' confirms amorphous" },
+      { b: "Polymaker", p: "PolyLite PETG", v: "50.8 MPa · HDT 78 °C · Charpy 2.6 kJ/m²", m: "ISO 527" },
+    ],
+  },
+  {
+    id: "pctg", name: "PCTG", full: "Copolyester, CHDM-rich", fam: "Everyday",
+    struct: "Amorphous", fiber: "None", tg: 84, tm: null, clarity: "Clear",
+    nozzle: [240, 270], bed: [70, 90], fan: [20, 50], minHotend: 260,
+    fanNote: "Slightly less fan than PETG to protect layer bonding.",
+    enc: 0, hard: false, dry: "Recommended", anneal: null,
+    glue: "Cyanoacrylate or epoxy", glueAvoid: "No practical solvent weld",
+    tensile: 45, tLo: 40, tHi: 50, zRatio: 0.8, modulus: 1600, impact: 12, elong: 25,
+    hdt: 76, density: 1.23, cost: [28, 40], diff: 2, uv: 3, chem: 4, tough: 7, conf: "medium",
+    pros: ["Noticeably tougher than PETG with better clarity", "Excellent layer adhesion, near-isotropic", "Higher Tg than PETG for a small cost premium"],
+    cons: ["Less widely stocked than PETG", "Still soft and scratch-prone", "Slower printing than PETG for best results"],
+    use: ["Clear enclosures", "Impact-resistant covers", "Light guides"],
+    avoid: ["High heat", "Stiff structural parts"],
+    note: "Essentially PETG with the toughness dial turned up. If a PETG part keeps cracking at a stress riser, this is the drop-in fix.",
+    brands: [{ b: "Various", p: "PCTG grades", v: "≈45 MPa · 25% elongation · Tg ≈84 °C", m: "typical supplier TDS" }],
+  },
+  {
+    id: "abs", name: "ABS", full: "Acrylonitrile butadiene styrene", fam: "Engineering",
+    struct: "Amorphous", fiber: "None", tg: 105, tm: null, clarity: "Opaque",
+    nozzle: [240, 270], bed: [90, 110], fan: [0, 20], minHotend: 250,
+    fanNote: "Fan is the enemy. Any airflow causes layer splitting and warp — keep it near zero in a warm chamber.",
+    enc: 2, hard: false, dry: "Recommended", anneal: null,
+    glue: "Acetone slurry or ABS cement — a true solvent weld, as strong as the parent", glueAvoid: "—",
+    tensile: 36, tLo: 33, tHi: 42, zRatio: 0.5, modulus: 2100, impact: 18, elong: 8,
+    hdt: 95, density: 1.05, cost: [22, 30], diff: 4, uv: 2, chem: 3, tough: 6, conf: "high",
+    pros: ["Solvent-welds and smooths with acetone — joins become invisible", "Tough and ductile at 18 kJ/m² notched", "Lowest density here at 1.05, so 1 kg makes ~18% more part than PLA"],
+    cons: ["Warps aggressively; heated enclosure effectively mandatory", "Releases styrene — ventilate", "Chalks and degrades in sunlight"],
+    use: ["Enclosure and printer parts", "Solvent-welded assemblies", "Automotive interior"],
+    avoid: ["Outdoor UV", "Open-frame printers", "Unventilated rooms"],
+    note: "Amorphous, so there is no crystal phase and no Tm — it softens gradually above 105 °C rather than melting sharply. That gradual softening is what makes it thermoformable and acetone-smoothable.",
+    brands: [
+      { b: "Bambu", p: "ABS", v: "62 MPa bending · 1880 MPa · HDT 87 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "PolyLite ABS", v: "33.4 MPa · 2247 MPa · Tg 101 °C · Tm N/A · Tc N/A", m: "ISO 527 — no Tm confirms amorphous" },
+      { b: "Polymaker", p: "ABS Max", v: "35.7 MPa · HDT 118 °C", m: "highest-HDT ABS listed" },
+    ],
+  },
+  {
+    id: "asa", name: "ASA", full: "Acrylonitrile styrene acrylate", fam: "Engineering",
+    struct: "Amorphous", fiber: "None", tg: 105, tm: null, clarity: "Opaque",
+    nozzle: [240, 280], bed: [90, 110], fan: [0, 20], minHotend: 250,
+    fanNote: "Near-zero fan. Even a lukewarm 30 °C chamber lifts layer bonding by around 20%.",
+    enc: 2, hard: false, dry: "Recommended", anneal: null,
+    glue: "Acetone or ABS/ASA cement — solvent welds cleanly", glueAvoid: "—",
+    tensile: 43, tLo: 40, tHi: 47, zRatio: 0.35, modulus: 2050, impact: 10, elong: 9,
+    hdt: 100, density: 1.09, cost: [26, 36], diff: 4, uv: 5, chem: 4, tough: 6, conf: "high",
+    pros: ["The outdoor material — genuinely UV-stable for years", "ABS heat resistance with better weathering and higher strength", "Solvent-weldable and smoothable"],
+    cons: ["Worst layer adhesion here — Z can fall to ~30% of XY", "Warps as badly as ABS", "Same styrene fumes"],
+    use: ["Outdoor fittings", "Automotive exterior", "Drone arms", "Roof and garden hardware"],
+    avoid: ["Loads across layer lines", "Open-frame printers"],
+    note: "Orientation matters more for ASA than for anything else in this table. Design the load path into XY or accept a two-thirds strength penalty.",
+    brands: [
+      { b: "Prusa", p: "Prusament ASA", v: "42 MPa · HDT 93 °C at 0.46 MPa", m: "in-house, batch-traceable" },
+      { b: "Bambu", p: "ASA", v: "65 MPa bending · 1920 MPa · HDT 100 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "Polymaker ASA", v: "43.8 MPa · HDT 103 °C · Charpy 10.3 kJ/m²", m: "ISO 527" },
+    ],
+  },
+  {
+    id: "pc", name: "PC", full: "Polycarbonate & PC blends", fam: "Engineering",
+    struct: "Amorphous", fiber: "None", tg: 147, tm: null, clarity: "Clear",
+    nozzle: [260, 300], bed: [100, 120], fan: [0, 20], minHotend: 280,
+    fanNote: "Minimal fan. PC needs a hot chamber to bond; cooling it fast produces delamination.",
+    enc: 2, hard: false, dry: "Required", anneal: null,
+    glue: "Dichloromethane solvent weld, or cyanoacrylate", glueAvoid: "Never IPA or acetone — they cause stress cracking in loaded PC",
+    tensile: 65, tLo: 53, tHi: 72, zRatio: 0.5, modulus: 2400, impact: 12, elong: 6,
+    hdt: 114, density: 1.19, cost: [35, 55], diff: 5, uv: 2, chem: 2, tough: 7, conf: "high",
+    pros: ["Strongest unfilled option on a desktop machine", "Optically clear with the highest Tg of the common amorphous polymers", "Impact-modified blends reach 21 kJ/m² notched"],
+    cons: ["Needs 270–300 °C hotend, 110 °C+ bed and a hot enclosure", "Hygroscopic and warps hard", "Poor solvent resistance — stress-cracks readily"],
+    use: ["Structural brackets", "Light lenses and covers", "High-heat housings"],
+    avoid: ["Solvent contact", "Open-frame printers"],
+    note: "Prusament PC Blend measured ~68 MPa flat but only ~35 MPa across layers — and ~25 MPa printed through a hardened steel nozzle. Nozzle material is a real design variable.",
+    brands: [
+      { b: "Prusa", p: "Prusament PC Blend", v: "≈68–71 MPa flat · ≈35 MPa layer · 275 °C / 115 °C", m: "independent tensile testing" },
+      { b: "Bambu", p: "PC", v: "108 MPa bending · 2310 MPa · HDT 117 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "PolyLite PC", v: "69.1 MPa · HDT 111 °C", m: "ISO 527" },
+      { b: "Polymaker", p: "PolyMax PC", v: "53.4 MPa · Charpy 21.3 kJ/m²", m: "toughened grade" },
+    ],
+  },
+  {
+    id: "pmma", name: "PMMA", full: "Acrylic / polymethyl methacrylate", fam: "Specialty",
+    struct: "Amorphous", fiber: "None", tg: 105, tm: null, clarity: "Clear",
+    nozzle: [230, 260], bed: [90, 110], fan: [20, 40], minHotend: 250,
+    fanNote: "Light fan. Too much causes cracking; PMMA is notch-sensitive while cooling.",
+    enc: 1, hard: false, dry: "Recommended", anneal: null,
+    glue: "Acrylic cement or dichloromethane — the best solvent weld of any filament", glueAvoid: "—",
+    tensile: 50, tLo: 45, tHi: 60, zRatio: 0.45, modulus: 2800, impact: 2, elong: 4,
+    hdt: 92, density: 1.18, cost: [35, 55], diff: 4, uv: 5, chem: 2, tough: 1.5, conf: "medium",
+    pros: ["The best optical clarity available, and it stays clear in UV indefinitely", "Solvent-welds beautifully into seamless assemblies", "Polishes and flame-polishes to glass-like finish"],
+    cons: ["Very brittle — the lowest impact resistance in this database", "Cracks easily during printing if cooled unevenly", "Poor solvent and chemical resistance"],
+    use: ["Light pipes and lenses", "Display pieces", "Clear signage"],
+    avoid: ["Any impact load", "Chemical exposure", "Thin snap-fits"],
+    note: "The only material here that beats PC on long-term optical clarity, because acrylic does not yellow. It pays for that with almost no toughness.",
+    brands: [{ b: "Various", p: "PMMA / acrylic grades", v: "≈50 MPa · Tg 105 °C · fully amorphous", m: "typical supplier TDS" }],
+  },
+  {
+    id: "pvb", name: "PVB", full: "Polyvinyl butyral", fam: "Specialty",
+    struct: "Amorphous", fiber: "None", tg: 70, tm: null, clarity: "Clear-capable",
+    nozzle: [215, 235], bed: [60, 80], fan: [50, 100], minHotend: 230,
+    fanNote: "Fan like PLA. PVB prints easily and benefits from full cooling.",
+    enc: 0, hard: false, dry: "Recommended", anneal: null,
+    glue: "Isopropyl alcohol — IPA both welds and vapour-smooths PVB", glueAvoid: "—",
+    tensile: 35, tLo: 30, tHi: 42, zRatio: 0.7, modulus: 1900, impact: 6, elong: 15,
+    hdt: 60, density: 1.08, cost: [30, 45], diff: 2, uv: 2, chem: 1, tough: 4, conf: "medium",
+    pros: ["Smooths to a glossy, near-transparent finish with cheap IPA — no acetone needed", "Prints about as easily as PLA", "Good layer adhesion"],
+    cons: ["Very poor moisture resistance — it will soften and cloud in humidity", "Low heat resistance", "Niche and expensive for its properties"],
+    use: ["Transparent display models", "Vases and lamps", "Smoothed prototypes"],
+    avoid: ["Anything outdoors or damp", "Load-bearing parts"],
+    note: "Chosen for finish rather than mechanics. The IPA smoothing is the whole point — it makes clear parts look moulded without a fume hood.",
+    brands: [{ b: "Prusa", p: "Prusament PVB", v: "IPA-smoothable · Tg ≈70 °C", m: "supplier data" }],
+  },
+  {
+    id: "hips", name: "HIPS", full: "High-impact polystyrene", fam: "Specialty",
+    struct: "Amorphous", fiber: "None", tg: 100, tm: null, clarity: "Opaque",
+    nozzle: [225, 255], bed: [95, 110], fan: [0, 30], minHotend: 250,
+    fanNote: "Low fan, similar to ABS.",
+    enc: 1, hard: false, dry: "Optional", anneal: null,
+    glue: "Limonene or acetone-based styrene cement", glueAvoid: "—",
+    tensile: 30, tLo: 25, tHi: 35, zRatio: 0.6, modulus: 1900, impact: 10, elong: 25,
+    hdt: 85, density: 1.04, cost: [22, 32], diff: 3, uv: 1, chem: 2, tough: 6, conf: "medium",
+    pros: ["Dissolves in limonene, making it the classic breakaway support for ABS", "Light and reasonably tough", "Machines and sands very cleanly"],
+    cons: ["Weak compared with everything else here", "Warps like ABS", "Poor UV and chemical resistance"],
+    use: ["Dissolvable support for ABS/ASA", "Lightweight models", "Sanded and painted parts"],
+    avoid: ["Structural loads", "Outdoor use"],
+    note: "Mostly bought as a support material rather than a part material — its selling point is that limonene removes it without touching ABS.",
+    brands: [{ b: "Various", p: "HIPS", v: "≈30 MPa · limonene-soluble · Tg 100 °C", m: "typical supplier TDS" }],
+  },
+  {
+    id: "pei", name: "PEI (ULTEM)", full: "Polyetherimide", fam: "High-performance",
+    struct: "Amorphous", fiber: "None", tg: 217, tm: null, clarity: "Translucent",
+    nozzle: [360, 400], bed: [140, 160], fan: [0, 0], minHotend: 380,
+    fanNote: "No fan at all. PEI needs a 130 °C+ chamber and any cooling causes immediate delamination.",
+    enc: 2, hard: false, dry: "Required", anneal: null,
+    glue: "High-temperature epoxy after abrasion; dichloromethane can solvent-weld it", glueAvoid: "Most common adhesives fail at PEI's service temperature",
+    tensile: 85, tLo: 75, tHi: 100, zRatio: 0.45, modulus: 3200, impact: 5, elong: 5,
+    hdt: 200, density: 1.27, cost: [250, 500], diff: 5, uv: 3, chem: 3, tough: 4, conf: "medium",
+    pros: ["Amorphous, so it holds tight tolerances with far less shrinkage than PEEK", "Inherently flame-retardant with very low smoke — aerospace certified", "Service temperature around 200 °C without any heat treatment"],
+    cons: ["Needs a 400 °C hotend and a 140 °C+ heated chamber", "Extremely expensive", "Poor resistance to chlorinated solvents"],
+    use: ["Aerospace brackets", "Flame-retardant housings", "Autoclavable tooling"],
+    avoid: ["Any desktop printer without a heated chamber", "Budget projects"],
+    note: "The key advantage over PEEK is that being amorphous it does not need annealing and shrinks predictably — you get high-temperature performance straight off the plate.",
+    brands: [{ b: "Various", p: "ULTEM 9085 / 1010", v: "9085 Tg 186 °C · 1010 Tg 217 °C · no Tm", m: "industrial TDS" }],
+  },
+
+  /* ---------- AMORPHOUS · FIBRE REINFORCED ---------- */
+  {
+    id: "petgcf", name: "PETG-CF", full: "Carbon-fibre PETG", fam: "Everyday",
+    struct: "Amorphous", fiber: "CF", tg: 78, tm: null, clarity: "Opaque",
+    nozzle: [240, 270], bed: [70, 85], fan: [0, 40], minHotend: 250,
+    fanNote: "Less fan than plain PETG — fibre already stiffens the melt and reduces droop.",
+    enc: 1, hard: true, dry: "Recommended", anneal: null,
+    glue: "Epoxy after abrading the surface", glueAvoid: "Surface fibre reduces bond area — CA alone is weak",
+    tensile: 50, tLo: 41, tHi: 60, zRatio: 0.45, modulus: 2900, impact: 4, elong: 4,
+    hdt: 74, density: 1.30, cost: [32, 45], diff: 2, uv: 3, chem: 4, tough: 3, conf: "medium",
+    pros: ["Roughly 65% stiffer than plain PETG, matte finish, almost no stringing", "Keeps PETG's chemical resistance", "Prints without an enclosure"],
+    cons: ["Loses PETG's ductility and becomes notch-sensitive", "Abrasive — hardened nozzle required", "No meaningful heat resistance gain"],
+    use: ["Stiff housings", "Drone frames", "Matte panels"],
+    avoid: ["Impact loads", "Snap-fits and living hinges"],
+    note: "Because PETG is amorphous, the fibre adds stiffness but cannot nucleate crystallinity — so unlike PA-CF or PPS-CF, there is no heat-resistance bonus to be had.",
+    brands: [
+      { b: "Bambu", p: "PETG-CF", v: "70 MPa bending · 2910 MPa · HDT 74 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "Fiberon PETG-rCF08", v: "59.8 MPa · HDT 68.6 °C", m: "ISO 527, recycled CF" },
+    ],
+  },
+  {
+    id: "asacf", name: "ASA-CF", full: "Carbon-fibre ASA", fam: "Engineering",
+    struct: "Amorphous", fiber: "CF", tg: 105, tm: null, clarity: "Opaque",
+    nozzle: [250, 280], bed: [90, 110], fan: [0, 10], minHotend: 260,
+    fanNote: "Effectively no fan.",
+    enc: 2, hard: true, dry: "Recommended", anneal: null,
+    glue: "Acetone cement still works, plus epoxy for structural joints", glueAvoid: "—",
+    tensile: 44, tLo: 40, tHi: 48, zRatio: 0.4, modulus: 3200, impact: 5.5, elong: 3,
+    hdt: 103, density: 1.09, cost: [35, 50], diff: 4, uv: 5, chem: 4, tough: 3, conf: "medium",
+    pros: ["Outdoor durability of ASA with markedly less warp — fibre restrains shrinkage", "Much stiffer than plain ASA", "Attractive matte finish that hides layer lines"],
+    cons: ["Toughness drops by roughly half versus plain ASA", "Abrasive", "Still needs an enclosure"],
+    use: ["Outdoor structural parts", "Antenna and roof mounts", "Automotive exterior"],
+    avoid: ["Impact-critical parts"],
+    note: "The main practical gain is dimensional: carbon fibre cuts ASA's warping enough to make large outdoor parts realistic.",
+    brands: [{ b: "Polymaker", p: "Fiberon ASA-CF08", v: "43.5 MPa · HDT 103 °C · Charpy 5.5 kJ/m²", m: "ISO 527" }],
+  },
+  {
+    id: "absgf", name: "ABS-GF", full: "Glass-fibre ABS", fam: "Engineering",
+    struct: "Amorphous", fiber: "GF", tg: 105, tm: null, clarity: "Opaque",
+    nozzle: [250, 280], bed: [90, 110], fan: [0, 10], minHotend: 260,
+    fanNote: "Effectively no fan.",
+    enc: 2, hard: true, dry: "Recommended", anneal: null,
+    glue: "Acetone cement or epoxy", glueAvoid: "—",
+    tensile: 40, tLo: 36, tHi: 45, zRatio: 0.45, modulus: 3000, impact: 9, elong: 4,
+    hdt: 100, density: 1.20, cost: [30, 45], diff: 4, uv: 2, chem: 3, tough: 4.5, conf: "medium",
+    pros: ["Keeps more toughness than a carbon-fibre equivalent", "Electrically insulating, unlike CF", "Available in colours — glass fibre does not force everything black"],
+    cons: ["Denser than plain ABS, so parts are heavier", "Abrasive; hardened nozzle required", "Less stiffness gain than CF for the same loading"],
+    use: ["Insulating structural parts", "Coloured engineering components", "Tooling"],
+    avoid: ["Weight-critical parts", "Anything needing conductivity"],
+    note: "The clean illustration of the CF-versus-GF trade: glass gives you less stiffness but keeps more impact resistance, insulates electrically, and takes colour.",
+    brands: [
+      { b: "Bambu", p: "ABS-GF", v: "glass-filled ABS · higher stiffness, colours available", m: "supplier data" },
+      { b: "Siraya Tech", p: "Fibreheart ABS-GF / ABS HT", v: "glass-fibre ABS · HT grade rated to 101 °C", m: "supplier product data" },
+    ],
+  },
+  {
+    id: "pccf", name: "PC-CF", full: "Carbon-fibre polycarbonate", fam: "Engineering",
+    struct: "Amorphous", fiber: "CF", tg: 147, tm: null, clarity: "Opaque",
+    nozzle: [270, 300], bed: [100, 120], fan: [0, 10], minHotend: 290,
+    fanNote: "No fan; hot chamber essential.",
+    enc: 2, hard: true, dry: "Required", anneal: null,
+    glue: "Epoxy after abrasion; dichloromethane still works on the polymer phase", glueAvoid: "Never IPA or acetone",
+    tensile: 72, tLo: 65, tHi: 85, zRatio: 0.4, modulus: 4500, impact: 6, elong: 3,
+    hdt: 130, density: 1.22, cost: [50, 80], diff: 5, uv: 2, chem: 2, tough: 4, conf: "medium",
+    pros: ["Very high stiffness with PC's heat resistance and no annealing step", "Warps far less than unfilled PC", "Excellent dimensional stability for tooling"],
+    cons: ["Loses PC's signature toughness", "Needs 300 °C hotend, hardened nozzle and enclosure", "Expensive"],
+    use: ["Jigs and fixtures", "Structural high-heat brackets", "Drone and RC frames"],
+    avoid: ["Impact loads", "Solvent contact"],
+    note: "One of the few ways to get 130 °C service temperature with no post-processing at all, since amorphous polymers need no crystallisation step.",
+    brands: [{ b: "Various", p: "PC-CF grades", v: "≈72 MPa · ≈4500 MPa · HDT ≈130 °C", m: "typical supplier TDS" }],
+  },
+
+  /* ---------- SEMI-CRYSTALLINE · UNFILLED ---------- */
+  {
+    id: "pla", name: "PLA", full: "Polylactic acid", fam: "Everyday",
+    struct: "Semi-crystalline", fiber: "None", tg: 60, tm: 151, clarity: "Clear-capable",
+    nozzle: [190, 230], bed: [50, 60], fan: [80, 100], minHotend: 230,
+    fanNote: "Full fan. PLA crystallises so slowly that fast cooling costs nothing and buys sharp detail.",
+    enc: 0, hard: false, dry: "Optional",
+    anneal: { temp: "80–110 °C, 30–60 min", gain: "HDT can rise past 100 °C, but expect 1–3% shrinkage and the part turns opaque white" },
+    glue: "Cyanoacrylate works excellently; dichloromethane or ethyl acetate solvent-welds", glueAvoid: "—",
+    tensile: 50, tLo: 45, tHi: 60, zRatio: 0.55, modulus: 3000, impact: 3.5, elong: 5,
+    hdt: 57, density: 1.24, cost: [20, 30], diff: 1, uv: 1, chem: 2, tough: 2, conf: "high",
+    pros: ["Stiffest of the common filaments at ~3000 MPa", "Prints on anything, minimal warp, best fine detail", "Cheapest, and clear in natural grades because it barely crystallises"],
+    cons: ["Softens around 55–60 °C — a parked car will deform it", "Very brittle at ~3.5 kJ/m² notched", "Creeps under constant load at room temperature"],
+    use: ["Prototypes", "Jigs", "Display models", "Light indoor brackets"],
+    avoid: ["Direct sun", "Car interiors", "Sustained load"],
+    note: "Technically semi-crystalline but it crystallises so slowly that printed parts come out only 5–10% crystalline — effectively amorphous. That is exactly why annealing works so dramatically on it, and why clear PLA turns opaque white afterwards.",
+    brands: [
+      { b: "Prusa", p: "Prusament PLA", v: "≈57 MPa · 3300 MPa stiffness", m: "in-house testing" },
+      { b: "Bambu", p: "PLA Basic", v: "76 MPa bending · 2750 MPa · HDT 57 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "PolyMax PLA", v: "Tg 61 °C · Tm 148.7 °C · Tc 111.7 °C", m: "DSC — Tc present confirms crystallisable" },
+    ],
+  },
+  {
+    id: "plaplus", name: "Tough PLA", full: "Impact-modified PLA (PLA+, PolyMax)", fam: "Everyday",
+    struct: "Semi-crystalline", fiber: "None", tg: 60, tm: 150, clarity: "Translucent",
+    nozzle: [210, 240], bed: [55, 65], fan: [80, 100], minHotend: 230,
+    fanNote: "Full fan, same as PLA.",
+    enc: 0, hard: false, dry: "Optional",
+    anneal: { temp: "80–100 °C, 30–60 min", gain: "Modest HDT gain; impact modifiers limit how much crystallinity develops" },
+    glue: "Cyanoacrylate; epoxy for structural joints", glueAvoid: "—",
+    tensile: 43, tLo: 38, tHi: 50, zRatio: 0.55, modulus: 2600, impact: 25, elong: 12,
+    hdt: 56, density: 1.22, cost: [25, 35], diff: 1, uv: 1, chem: 2, tough: 6, conf: "high",
+    pros: ["5–10× the impact resistance of plain PLA for no extra difficulty", "Bends and yields instead of shattering", "Same easy profile, no enclosure"],
+    cons: ["Gives up ~15% tensile and ~15% stiffness", "Heat resistance unchanged — still fails near 55 °C", "Naming is inconsistent across brands"],
+    use: ["Handled parts", "RC frames", "Toys", "Tool handles"],
+    avoid: ["Hot environments", "UV exposure", "Static load"],
+    note: "Polymaker's PolyMax measures 38.9 kJ/m² notched against 3.3 for their standard PLA — an order of magnitude on the same print profile.",
+    brands: [
+      { b: "Polymaker", p: "PolyMax PLA", v: "41.3 MPa · Charpy 38.9 kJ/m² · HDT 55 °C", m: "ISO 527 / ISO 179" },
+      { b: "Polymaker", p: "PolyLite PLA Pro", v: "49.8 MPa · Charpy 17.1 kJ/m²", m: "ISO 527" },
+    ],
+  },
+  {
+    id: "htpla", name: "HT-PLA", full: "High-temperature PLA", fam: "Everyday",
+    struct: "Semi-crystalline", fiber: "None", tg: 62, tm: 155, clarity: "Opaque",
+    nozzle: [210, 240], bed: [55, 70], fan: [50, 100], minHotend: 230,
+    fanNote: "Fan freely while printing — the heat resistance comes from the oven afterwards, not the chamber.",
+    enc: 0, hard: false, dry: "Recommended",
+    anneal: { temp: "100–120 °C, 30–60 min", gain: "HDT jumps from ~61 °C to ~107 °C. This is the whole point of the material" },
+    glue: "Cyanoacrylate or epoxy", glueAvoid: "Solvent welds work less well after annealing",
+    tensile: 43, tLo: 38, tHi: 50, zRatio: 0.47, modulus: 3000, impact: 5, elong: 4,
+    hdt: 107, density: 1.29, cost: [30, 42], diff: 2, uv: 1, chem: 2, tough: 2.5, conf: "medium",
+    pros: ["PLA's easy printing with polycarbonate-class heat resistance after annealing", "No enclosure needed to print it", "Very low warp for a 100 °C-capable material"],
+    cons: ["Only reaches those numbers after an oven anneal, which shrinks and distorts parts", "Still brittle — annealing raises heat resistance, not toughness", "Newer chemistry with less field data"],
+    use: ["Hot-car parts", "Brackets near hotends", "Heat without an enclosure"],
+    avoid: ["Impact loads", "Tight tolerances you cannot re-fit after annealing"],
+    note: "A nucleated PLA formulated to crystallise fast enough to be practical. It is the clearest demonstration in this database of what crystallinity buys you: same polymer family, +46 °C of service temperature.",
+    brands: [
+      { b: "Polymaker", p: "HT-PLA", v: "42.9 MPa · HDT 61 → 107 °C annealed · Vicat 156 °C", m: "ISO 527 / ISO 75" },
+    ],
+  },
+  {
+    id: "copa", name: "Nylon (PA6/CoPA)", full: "Copolyamide, unfilled", fam: "Engineering",
+    struct: "Semi-crystalline", fiber: "None", tg: 60, tm: 220, clarity: "Translucent",
+    nozzle: [250, 290], bed: [90, 110], fan: [0, 30], minHotend: 280,
+    fanNote: "Low fan. Nylon needs slow cooling to crystallise and bond; fast cooling gives weak, cloudy layers.",
+    enc: 2, hard: false, dry: "Required",
+    anneal: { temp: "80–120 °C, 4–6 h", gain: "Raises crystallinity and HDT, improves dimensional stability. Most nylon TDS figures are quoted annealed" },
+    glue: "Very hard to bond. Abrade, then 2-part epoxy or CA with a polyolefin primer", glueAvoid: "Plain CA on an untreated surface will peel straight off",
+    tensile: 78, tLo: 70, tHi: 85, zRatio: 0.5, modulus: 1900, impact: 7, elong: 25,
+    hdt: 111, density: 1.12, cost: [45, 70], diff: 5, uv: 2, chem: 5, tough: 7, conf: "medium",
+    pros: ["Outstanding toughness and fatigue resistance — the material for living hinges", "Low friction and self-lubricating; ideal for gears and bushings", "Best chemical resistance of the unfilled options"],
+    cons: ["Extremely hygroscopic — absorbs enough water in hours to visibly degrade prints", "Dimensions shift with ambient humidity even after printing", "Warps badly; enclosure required"],
+    use: ["Gears and bushings", "Living hinges", "Fatigue-loaded parts"],
+    avoid: ["Humid environments without sealing", "Tight tolerances", "UV exposure"],
+    note: "Water acts as a plasticiser in nylon: a saturated part has a noticeably lower Tg and modulus than the datasheet. Storage discipline matters more here than print settings.",
+    brands: [
+      { b: "Polymaker", p: "PolyMide CoPA", v: "78 MPa · HDT 111 °C · Vicat 180 °C", m: "ISO 527, annealed" },
+    ],
+  },
+  {
+    id: "pp", name: "PP", full: "Polypropylene", fam: "Specialty",
+    struct: "Semi-crystalline", fiber: "None", tg: -10, tm: 165, clarity: "Translucent",
+    nozzle: [220, 250], bed: [80, 100], fan: [30, 60], minHotend: 260,
+    fanNote: "Moderate fan. PP shrinks a lot on crystallising, so a warm chamber matters more than the fan number.",
+    enc: 1, hard: false, dry: "Optional",
+    anneal: null,
+    glue: "Almost unglueable. Needs a polyolefin primer with CA, or hot-plate/ultrasonic welding", glueAvoid: "Epoxy and plain CA will not stick — PP's surface energy is too low",
+    tensile: 25, tLo: 20, tHi: 32, zRatio: 0.6, modulus: 1300, impact: 12, elong: 100,
+    hdt: 90, density: 0.91, cost: [35, 55], diff: 5, uv: 2, chem: 5, tough: 8, conf: "medium",
+    pros: ["Lightest filament available at 0.90 g/cm³ — it floats", "Superb chemical resistance and fatigue life; excellent living hinges", "Very high elongation, almost impossible to break by bending"],
+    cons: ["Warps and shrinks more than almost anything else", "Notoriously bad bed adhesion — usually needs packing tape or PP sheet", "Very low stiffness and strength"],
+    use: ["Chemical containers", "Living hinges", "Lab labware", "Sealing parts"],
+    avoid: ["Structural loads", "Anything you need to glue", "Tight tolerances"],
+    note: "The lowest density and the worst adhesion in this table, both for the same reason: PP is a non-polar polyolefin. Print it onto polypropylene packing tape and it behaves.",
+    brands: [{ b: "Various", p: "PP grades", v: "≈25 MPa · Tm ≈165 °C · density 0.90", m: "supplier TDS + DSC literature" }],
+  },
+  {
+    id: "pom", name: "POM", full: "Acetal / polyoxymethylene (Delrin)", fam: "Engineering",
+    struct: "Semi-crystalline", fiber: "None", tg: -60, tm: 170, clarity: "Opaque",
+    nozzle: [210, 230], bed: [110, 130], fan: [0, 30], minHotend: 240,
+    fanNote: "Low fan and a hot bed. POM crystallises fast and shrinks hard while doing so.",
+    enc: 2, hard: false, dry: "Optional",
+    anneal: { temp: "140–160 °C, 1–2 h", gain: "Relieves the large internal stresses from rapid crystallisation and stabilises dimensions" },
+    glue: "Effectively unglueable without surface etching or plasma treatment", glueAvoid: "Design mechanical fasteners instead — this is the standard industrial approach",
+    tensile: 60, tLo: 50, tHi: 70, zRatio: 0.4, modulus: 2800, impact: 8, elong: 25,
+    hdt: 140, density: 1.41, cost: [45, 75], diff: 5, uv: 2, chem: 5, tough: 7, conf: "medium",
+    pros: ["The lowest coefficient of friction of any common filament — the gear and bearing material", "Excellent fatigue resistance and dimensional stability once annealed", "Strong and stiff with genuine ductility"],
+    cons: ["Terrible bed adhesion; shrinks around 2%", "Cannot be glued or painted without aggressive surface treatment", "Releases formaldehyde if overheated — ventilate strictly"],
+    use: ["Gears", "Bearings and bushings", "Sliding wear surfaces", "Snap-fits"],
+    avoid: ["Bonded assemblies", "Painted parts", "Overheated hotends"],
+    note: "Highly crystalline — around 75% — which is exactly why it is slippery, tough and dimensionally stable, and also why nothing sticks to it, including your build plate.",
+    brands: [{ b: "Various", p: "POM / Delrin grades", v: "≈60 MPa · Tm 170 °C · density 1.41", m: "industrial TDS" }],
+  },
+  {
+    id: "tpu", name: "TPU 95A", full: "Thermoplastic polyurethane", fam: "Flexible",
+    struct: "Block", fiber: "None", tg: -40, tm: 180, clarity: "Translucent",
+    nozzle: [220, 250], bed: [30, 50], fan: [50, 100], minHotend: 250,
+    fanNote: "Generous fan helps prevent the soft extrudate from sagging.",
+    enc: 0, hard: false, dry: "Required", anneal: null,
+    glue: "Flexible cyanoacrylate or polyurethane adhesive (shoe glue)", glueAvoid: "Rigid epoxy cracks off as soon as the part flexes",
+    tensile: 30, tLo: 25, tHi: 40, zRatio: 0.9, modulus: 80, impact: 60, elong: 550,
+    hdt: 0, density: 1.21, cost: [30, 45], diff: 3, uv: 3, chem: 4, tough: 10, conf: "high",
+    pros: ["Effectively unbreakable — 500%+ elongation", "Near-isotropic: Z is ~90% of XY, the best here", "Excellent abrasion resistance and vibration damping"],
+    cons: ["Slow — keep under about 80 mm/s", "Needs direct drive; Bowden setups struggle", "Very hygroscopic, and holds tolerances poorly"],
+    use: ["Gaskets and seals", "Feet and dampers", "Phone cases", "Wheels"],
+    avoid: ["Rigid or dimensionally critical parts", "Fast prints", "Bowden printers"],
+    note: "A block copolymer rather than a simple polymer: rigid crystalline hard segments act as physical crosslinks inside a rubbery amorphous matrix. Shore hardness matters far more than tensile strength when selecting.",
+    brands: [
+      { b: "Bambu", p: "TPU 95A", v: "125.2 kJ/m² impact XY · 88.7 kJ/m² Z · <80 mm/s", m: "unnotched impact" },
+      { b: "Polymaker", p: "PolyFlex TPU95", v: "551% elongation at break", m: "ISO 527" },
+      { b: "Siraya Tech", p: "Flex 85A / foaming TPU", v: "softer 85A grade, plus a foaming TPU for low density and vibration damping", m: "supplier product data" },
+    ],
+  },
+  {
+    id: "peek", name: "PEEK", full: "Polyether ether ketone", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "None", tg: 143, tm: 343, clarity: "Opaque",
+    nozzle: [400, 450], bed: [130, 160], fan: [0, 0], minHotend: 430,
+    fanNote: "Absolutely no fan. Chamber must stay above 133 °C so the part crystallises in situ — cold-printed PEEK is weak and hazy.",
+    enc: 2, hard: false, dry: "Required",
+    anneal: { temp: "200–300 °C, several hours", gain: "Raises crystallinity from 15–35% as-printed to 35–45%. Improves strength, stiffness, creep and chemical resistance — but cold-crystallised parts distort significantly" },
+    glue: "No solvent exists. Abrade plus plasma or flame treatment, then high-temperature epoxy", glueAvoid: "Mechanical fastening is the accepted industrial answer",
+    tensile: 95, tLo: 85, tHi: 105, zRatio: 0.4, modulus: 3600, impact: 6, elong: 25,
+    hdt: 160, density: 1.30, cost: [400, 800], diff: 5, uv: 3, chem: 5, tough: 7, conf: "high",
+    pros: ["Continuous service near 250 °C with metal-like strength-to-weight", "Near-total chemical inertness and excellent wear resistance", "Biocompatible and steam-sterilisable — used for implants"],
+    cons: ["Requires a 450 °C hotend and a 130 °C+ actively heated chamber", "Among the most expensive filaments made", "Crystallinity — and therefore properties — depends entirely on thermal history"],
+    use: ["Aerospace and medical parts", "Chemical processing", "High-temperature bearings"],
+    avoid: ["Any printer without a heated chamber", "Cost-sensitive work"],
+    note: "The textbook case for why chamber temperature is a material property, not a convenience. Print below 133 °C and you get a weak, largely amorphous part; annealing afterwards recovers strength but distorts the geometry.",
+    brands: [{ b: "Various", p: "PEEK grades", v: "Tg 143 °C · Tm 343 °C · ≈100 MPa · 3.6 GPa · chamber ≥133 °C", m: "literature + industrial TDS" }],
+  },
+
+  /* ---------- SEMI-CRYSTALLINE · FIBRE REINFORCED ---------- */
+  {
+    id: "placf", name: "PLA-CF", full: "Carbon-fibre PLA", fam: "Everyday",
+    struct: "Semi-crystalline", fiber: "CF", tg: 60, tm: 150, clarity: "Opaque",
+    nozzle: [210, 240], bed: [55, 65], fan: [50, 100], minHotend: 230,
+    fanNote: "Fan freely — fibre reduces stringing and droop anyway.",
+    enc: 0, hard: true, dry: "Optional",
+    anneal: { temp: "80–100 °C, 30–60 min", gain: "Fibre nucleates crystallisation, so PLA-CF anneals faster than plain PLA — but HDT gain is still modest" },
+    glue: "Epoxy after abrasion", glueAvoid: "Surface fibre weakens CA bonds",
+    tensile: 42, tLo: 31, tHi: 60, zRatio: 0.42, modulus: 3950, impact: 5, elong: 2,
+    hdt: 55, density: 1.29, cost: [30, 45], diff: 2, uv: 1, chem: 2, tough: 1.5, conf: "low",
+    pros: ["Stiffest material that prints as easily as PLA", "Dead-matte finish that hides layer lines", "Almost no warp and very little stringing"],
+    cons: ["Brittle — carbon fibre raises stiffness, not toughness", "Abrasive; brass nozzles wear out in hours", "No heat resistance gain at all"],
+    use: ["Stiff cosmetic panels", "Camera and RC parts"],
+    avoid: ["Impact loads", "Heat", "Anything where a snap is dangerous"],
+    note: "Confidence is low deliberately: published tensile ranges from 31 to 60 MPa depending on fibre loading and base resin. Test the specific spool before designing around it.",
+    brands: [
+      { b: "Bambu", p: "PLA-CF", v: "89 MPa bending · 3950 MPa · HDT 55 °C", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "PLA-CF", v: "31.2 MPa · HDT 54 °C", m: "ISO 527" },
+    ],
+  },
+  {
+    id: "htplagf", name: "HT-PLA-GF", full: "Glass-fibre high-temp PLA", fam: "Everyday",
+    struct: "Semi-crystalline", fiber: "GF", tg: 62, tm: 155, clarity: "Opaque",
+    nozzle: [220, 250], bed: [60, 70], fan: [50, 100], minHotend: 240,
+    fanNote: "Fan freely during printing; heat resistance comes from the anneal.",
+    enc: 0, hard: true, dry: "Recommended",
+    anneal: { temp: "100–120 °C, 30–60 min", gain: "HDT rises from ~75 °C to ~115 °C, and glass fibre limits the shrinkage that normally accompanies annealing" },
+    glue: "Cyanoacrylate or epoxy", glueAvoid: "—",
+    tensile: 50, tLo: 45, tHi: 55, zRatio: 0.45, modulus: 3600, impact: 5.3, elong: 3,
+    hdt: 115, density: 1.34, cost: [35, 48], diff: 2, uv: 1, chem: 2, tough: 2.5, conf: "medium",
+    pros: ["Higher strength and heat resistance than plain HT-PLA after annealing", "Glass fibre reduces annealing distortion — a real practical advantage", "Still prints without an enclosure"],
+    cons: ["Abrasive; hardened nozzle required", "Brittle", "Denser than plain PLA at 1.34"],
+    use: ["Annealed high-heat brackets", "Jigs for soldering and heat work"],
+    avoid: ["Impact loads", "Parts that cannot tolerate any annealing shrinkage"],
+    note: "The fibre does double duty: it nucleates crystallisation so annealing works faster, and it physically restrains the part while that crystallisation shrinkage happens.",
+    brands: [{ b: "Polymaker", p: "HT-PLA-GF", v: "50.1 MPa · HDT 75 → 115 °C annealed · Vicat 149 °C", m: "ISO 527 / ISO 75" }],
+  },
+  {
+    id: "petcf", name: "PET-CF", full: "Carbon-fibre PET", fam: "Composite",
+    struct: "Semi-crystalline", fiber: "CF", tg: 78, tm: 250, clarity: "Opaque",
+    nozzle: [260, 300], bed: [90, 110], fan: [0, 40], minHotend: 290,
+    fanNote: "Low fan. Slow cooling lets the PET crystallise, which is where the heat resistance comes from.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "90–130 °C, 6–12 h", gain: "Essential. HDT climbs from moderate to 150–205 °C once crystallised. Unannealed PET-CF is a very different material" },
+    glue: "Epoxy after abrasion", glueAvoid: "CA is weak on the fibre-rich surface",
+    tensile: 70, tLo: 60, tHi: 90, zRatio: 0.35, modulus: 5320, impact: 5, elong: 2,
+    hdt: 175, density: 1.34, cost: [45, 70], diff: 5, uv: 3, chem: 4, tough: 3, conf: "medium",
+    pros: ["Extremely stiff at over 5000 MPa, with high heat resistance once annealed", "Far less moisture-sensitive than nylon composites", "Dimensionally stable, good for precision fixtures"],
+    cons: ["Needs 300 °C hotend, hardened nozzle and enclosure", "Headline heat numbers require annealing", "Brittle, and slow to print"],
+    use: ["High-temperature fixtures", "Soldering and welding jigs", "Under-hood parts"],
+    avoid: ["Impact loads", "Skipping the anneal step"],
+    note: "Unlike PETG, plain PET does crystallise — which is why PET-CF responds to annealing so strongly while PETG-CF does not respond at all. Same element, opposite behaviour.",
+    brands: [
+      { b: "Bambu", p: "PET-CF", v: "131 MPa bending · 5320 MPa · HDT 205 °C", m: "ISO 178 — flexural, annealed" },
+      { b: "Polymaker", p: "Fiberon PET-CF17", v: "65.9 MPa · HDT 147.5 °C · Vicat 238 °C", m: "ISO 527, annealed" },
+    ],
+  },
+  {
+    id: "pa6cf", name: "PA6-CF", full: "Carbon-fibre nylon 6", fam: "Composite",
+    struct: "Semi-crystalline", fiber: "CF", tg: 60, tm: 220, clarity: "Opaque",
+    nozzle: [260, 300], bed: [90, 110], fan: [0, 40], minHotend: 290,
+    fanNote: "Low fan in a hot chamber. Nylon needs the heat to bond layers across the fibre.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "90–130 °C, 6–12 h", gain: "Most published PA6-CF figures are annealed values. Raises HDT sharply and stabilises dimensions" },
+    glue: "Abrade, then epoxy or CA with polyolefin primer", glueAvoid: "Untreated surfaces bond poorly",
+    tensile: 105, tLo: 95, tHi: 115, zRatio: 0.33, modulus: 5400, impact: 11, elong: 3,
+    hdt: 195, density: 1.17, cost: [60, 100], diff: 5, uv: 2, chem: 5, tough: 5, conf: "high",
+    pros: ["Among the strongest and stiffest materials a desktop printer can run", "Heat resistance approaching 200 °C", "Excellent wear and fatigue behaviour"],
+    cons: ["Layer adhesion is only about a third of XY strength", "PA6 base absorbs up to 2.35% water", "Expensive, and needs the full engineering setup"],
+    use: ["Structural brackets", "Engine-bay parts", "End-use tooling"],
+    avoid: ["Loads across layer lines", "Humid storage"],
+    note: "The specific-strength king, with the worst anisotropy here. A part designed with loads in XY performs superbly; the same part rotated 90° fails at a third of the load.",
+    brands: [
+      { b: "Bambu", p: "PA6-CF", v: "151 MPa bending · 5460 MPa · HDT 184 °C · 2.35% water", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "Fiberon PA6-CF20", v: "109.3 MPa · HDT 215 °C · Charpy 11 kJ/m²", m: "ISO 527, annealed" },
+    ],
+  },
+  {
+    id: "pa6gf", name: "PA6-GF", full: "Glass-fibre nylon 6", fam: "Composite",
+    struct: "Semi-crystalline", fiber: "GF", tg: 60, tm: 220, clarity: "Opaque",
+    nozzle: [260, 300], bed: [90, 110], fan: [0, 40], minHotend: 290,
+    fanNote: "Low fan in a hot chamber.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "90–130 °C, 6–12 h", gain: "Same as PA6-CF — published figures are annealed" },
+    glue: "Abrade, then epoxy", glueAvoid: "Untreated surfaces bond poorly",
+    tensile: 80, tLo: 72, tHi: 90, zRatio: 0.38, modulus: 4200, impact: 10, elong: 5,
+    hdt: 191, density: 1.20, cost: [55, 90], diff: 5, uv: 2, chem: 5, tough: 6, conf: "high",
+    pros: ["Keeps more toughness and elongation than the carbon-fibre version", "Electrically insulating — usable around electronics and antennas", "Nearly the same heat resistance as PA6-CF for less money"],
+    cons: ["Lower strength and stiffness than PA6-CF", "Denser, so parts weigh more", "Glass is just as abrasive as carbon"],
+    use: ["Insulating structural parts", "Antenna mounts", "Electrical enclosures"],
+    avoid: ["Weight-critical parts", "Maximum-stiffness applications"],
+    note: "Direct CF-versus-GF comparison in the same base polymer: 109 MPa and 5460 MPa for carbon against 80 MPa and 4200 MPa for glass, but with better impact and no electrical conductivity.",
+    brands: [{ b: "Polymaker", p: "Fiberon PA6-GF25", v: "80.1 MPa · HDT 191 °C · Charpy 10 kJ/m²", m: "ISO 527, annealed" }],
+  },
+  {
+    id: "pahtcf", name: "PAHT-CF / PA12-CF", full: "Carbon-fibre high-temp polyamide", fam: "Composite",
+    struct: "Semi-crystalline", fiber: "CF", tg: 50, tm: 180, clarity: "Opaque",
+    nozzle: [260, 300], bed: [90, 110], fan: [0, 40], minHotend: 290,
+    fanNote: "Low fan; hot chamber.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "90–130 °C, 6–12 h", gain: "Improves HDT and dimensional stability; published values are annealed" },
+    glue: "Abrade, then epoxy", glueAvoid: "Untreated surfaces bond poorly",
+    tensile: 82, tLo: 77, tHi: 95, zRatio: 0.4, modulus: 4230, impact: 12, elong: 4,
+    hdt: 160, density: 1.06, cost: [55, 95], diff: 5, uv: 2, chem: 5, tough: 6, conf: "high",
+    pros: ["Far less moisture-sensitive than PA6 — much more predictable in service", "Tougher than PA6-CF while keeping most of the strength", "Lowest density of any composite here at 1.06"],
+    cons: ["Still needs enclosure, hardened nozzle and 300 °C hotend", "Expensive", "Lower absolute strength than PA6-CF"],
+    use: ["Drone and RC frames", "Lightweight structural parts", "Hot-environment brackets"],
+    avoid: ["Cost-sensitive projects", "Basic printers"],
+    note: "Usually the better real-world choice over PA6-CF unless you need the last 20% of strength — the moisture behaviour alone makes parts far more repeatable.",
+    brands: [
+      { b: "Bambu", p: "PAHT-CF", v: "125 MPa bending · 4230 MPa · HDT 194 °C · 0.88% water", m: "ISO 178 — flexural" },
+      { b: "Polymaker", p: "Fiberon PA12-CF10", v: "77.4 MPa · HDT 131 °C", m: "ISO 527, annealed" },
+    ],
+  },
+  {
+    id: "ppacf", name: "PPA-CF", full: "Carbon-fibre polyphthalamide", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "CF", tg: 125, tm: 310, clarity: "Opaque",
+    nozzle: [280, 310], bed: [100, 120], fan: [0, 20], minHotend: 300,
+    fanNote: "Minimal fan and a hot chamber — the semi-aromatic backbone needs heat to bond well.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "120–160 °C, several hours", gain: "Manufacturers explicitly recommend annealing for strength, heat resistance and dimensional stability" },
+    glue: "Abrade plus epoxy; surface treatment strongly advised", glueAvoid: "Solvent welding is not practical",
+    tensile: 150, tLo: 130, tHi: 165, zRatio: 0.33, modulus: 10500, impact: 10, elong: 2,
+    hdt: 227, density: 1.19, cost: [80, 130], diff: 5, uv: 2, chem: 5, tough: 4, conf: "medium",
+    pros: ["The strongest and stiffest material available on mainstream desktop printers", "Rated for prolonged exposure to about 227 °C", "Roughly two-thirds less moisture absorption than PA6-CF, so it stays stable in humidity"],
+    cons: ["Needs 310 °C hotend, hardened nozzle and enclosure", "Very expensive", "Severe anisotropy — Z-strength is about a third of XY"],
+    use: ["Automotive under-hood parts", "Metal replacement", "High-load industrial jigs"],
+    avoid: ["Loads across layers", "Printers limited to 300 °C"],
+    note: "A semi-aromatic nylon: rigid aromatic rings in the backbone push Tg and Tm far above standard PA6. Confidence is medium because the strength figures derive from a manufacturer comparison claim rather than a published ISO tensile value.",
+    brands: [
+      { b: "Bambu", p: "PPA-CF", v: "stated 48% stronger and 102% stiffer than PA6-CF · 227 °C service", m: "manufacturer comparative claim" },
+      { b: "Siraya Tech", p: "Fibreheart PPA-CF", v: "15% carbon fibre · HDT to 230 °C · anneal 80–100 °C for 4–8 h", m: "supplier TDS — 0.4 mm+ hardened nozzle, enclosure required" },
+    ],
+  },
+  {
+    id: "ppa", name: "PPA", full: "Polyphthalamide, unfilled", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "None", tg: 125, tm: 310, clarity: "Opaque",
+    nozzle: [280, 310], bed: [100, 120], fan: [0, 20], minHotend: 300,
+    fanNote: "Minimal fan in a hot chamber \u2014 the semi-aromatic backbone needs heat to bond.",
+    enc: 2, hard: false, dry: "Required",
+    anneal: { temp: "80\u2013100 \u00b0C, 4\u20138 h", gain: "Manufacturer-recommended: raises strength, relieves internal stress and stabilises dimensions" },
+    glue: "Abrade, then epoxy", glueAvoid: "No practical solvent weld",
+    tensile: 70, tLo: 62, tHi: 78, zRatio: 0.42, modulus: 3200, impact: 8, elong: 6,
+    hdt: 140, density: 1.20, cost: [55, 85], diff: 5, uv: 2, chem: 5, tough: 6, conf: "medium",
+    pros: ["About 70 MPa unfilled \u2014 stronger than any unfilled nylon here", "Saturates at ~2.5% water against 9\u201310% for unfilled PA6, so parts stay dimensionally honest", "Self-lubricating with low friction, unusual for a material this strong"],
+    cons: ["Needs a 310 \u00b0C hotend and a heated enclosure", "Expensive", "Still absorbs more water than PPS or PET-CF"],
+    use: ["Gears and bearings under heat", "Automotive brackets", "Wear parts needing toughness"],
+    avoid: ["Open-frame printers", "Cost-sensitive work"],
+    note: "Most PPA sold is fibre-filled, but the unfilled grade keeps nylon toughness and self-lubrication while the semi-aromatic backbone pushes Tg to ~125 \u00b0C. A strong gear material where PA6 would swell.",
+    brands: [{ b: "Siraya Tech", p: "Fibreheart PPA", v: "70 MPa tensile (dry) \u00b7 114 MPa flexural \u00b7 1.2 g/cm\u00b3 \u00b7 2.50% saturated water", m: "supplier TDS, dry-state values" }],
+  },
+  {
+    id: "ppagf", name: "PPA-GF", full: "Glass-fibre polyphthalamide (15%)", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "GF", tg: 125, tm: 310, clarity: "Opaque",
+    nozzle: [280, 310], bed: [100, 120], fan: [0, 20], minHotend: 310,
+    fanNote: "Minimal fan; hot chamber essential.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "80\u2013100 \u00b0C, 4\u20138 h", gain: "Improves strength and dimensional stability" },
+    glue: "Abrade, then epoxy", glueAvoid: "No solvent weld",
+    tensile: 100, tLo: 88, tHi: 115, zRatio: 0.38, modulus: 6500, impact: 9, elong: 3,
+    hdt: 185, density: 1.30, cost: [70, 110], diff: 5, uv: 2, chem: 5, tough: 5, conf: "medium",
+    pros: ["185 \u00b0C HDT while staying electrically insulating \u2014 a rare combination", "Keeps more impact resistance than the carbon-fibre version", "Very low moisture pickup, so it warps far less than PA6-GF"],
+    cons: ["Needs 310 \u00b0C hotend, hardened nozzle and enclosure", "Denser than the CF grade at 1.30", "Tensile is inferred from fibre loading, not a published ISO value"],
+    use: ["Under-hood insulating parts", "High-temperature electrical housings", "Aerospace brackets"],
+    avoid: ["Weight-critical parts", "Printers under 300 \u00b0C"],
+    note: "The natural pick when you need PA6-GF insulation but cannot tolerate its moisture behaviour. HDT is published; the tensile figure is estimated from fibre loading and marked medium confidence.",
+    brands: [{ b: "Siraya Tech", p: "Fibreheart PPA-GF", v: "185 \u00b0C HDT \u00b7 15% glass fibre \u00b7 ultra-low moisture absorption", m: "supplier data \u2014 HDT published, tensile inferred" }],
+  },
+  {
+    id: "ppacfcore", name: "PPA-CF Core", full: "Core-shell PPA \u2014 25% CF core, unfilled skin", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "CF", tg: 125, tm: 310, clarity: "Opaque",
+    nozzle: [280, 310], bed: [100, 120], fan: [0, 20], minHotend: 310,
+    fanNote: "Minimal fan; hot chamber essential.",
+    enc: 2, hard: true, dry: "Recommended",
+    anneal: { temp: "80\u2013100 \u00b0C, 4\u20138 h", gain: "Further raises strength and dimensional stability" },
+    glue: "Abrade, then epoxy \u2014 the unfilled skin bonds better than a normal CF surface", glueAvoid: "No solvent weld",
+    tensile: 155, tLo: 135, tHi: 175, zRatio: 0.5, modulus: 11000, impact: 9, elong: 2,
+    hdt: 230, density: 1.20, cost: [85, 125], diff: 5, uv: 2, chem: 5, tough: 4, conf: "low",
+    pros: ["Coaxial filament \u2014 25% carbon fibre in the core, wrapped in unfilled PPA", "The unfilled skin means layers bond polymer-to-polymer, which should lift Z-strength above normal CF grades", "Protective outer layer reduces nozzle wear despite the higher fibre loading"],
+    cons: ["The Z-strength advantage is a manufacturer claim, not a published ISO figure", "Highest fibre loading here, so expect brittleness", "Among the most expensive filaments outside PEEK and PEI"],
+    use: ["Structural parts loaded across layers", "Metal-replacement brackets", "High-load tooling"],
+    avoid: ["Impact-critical parts", "Any budget"],
+    note: "Architecturally the most interesting filament in this database. Every other fibre-filled material here is homogeneous, so chopped fibre sits in the weld zone between layers and interrupts the bond \u2014 which is why PA6-CF holds only ~33% across layers. A core-shell filament puts unfilled polymer at that interface by design. If it performs as claimed it attacks the worst weakness of composite FDM. Marked low confidence until measured.",
+    brands: [{ b: "Siraya Tech", p: "Fibreheart PPA-CF Core", v: "25% CF core \u00b7 unfilled PPA shell \u00b7 HDT to 230 \u00b0C \u00b7 claims improved Z-axis bonding", m: "supplier claim \u2014 no published ISO 527 Z value" }],
+  },
+  {
+    id: "ppscf", name: "PPS-CF", full: "Carbon-fibre polyphenylene sulfide", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "CF", tg: 90, tm: 280, clarity: "Opaque",
+    nozzle: [300, 340], bed: [110, 140], fan: [0, 0], minHotend: 330,
+    fanNote: "No fan. PPS must crystallise in a hot chamber; cooling it quickly leaves it amorphous and brittle.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "150–200 °C, several hours", gain: "Completes crystallisation. HDT reaches ~250 °C once fully crystalline" },
+    glue: "Nothing dissolves it below 200 °C. Abrade plus plasma treatment, then high-temperature epoxy", glueAvoid: "Design for mechanical fastening",
+    tensile: 60, tLo: 55, tHi: 70, zRatio: 0.35, modulus: 4500, impact: 5.3, elong: 2,
+    hdt: 252, density: 1.29, cost: [90, 160], diff: 5, uv: 3, chem: 5, tough: 3, conf: "high",
+    pros: ["Chemical resistance second only to PTFE — virtually insoluble below 200 °C", "HDT around 250 °C and inherently flame-retardant", "Moisture absorption of roughly 0.05%, the lowest here — dimensionally rock solid"],
+    cons: ["Needs a 340 °C hotend and a hot chamber", "Brittle, with low impact resistance", "Very expensive and difficult to bond"],
+    use: ["Chemical handling", "Fuel and oil contact parts", "High-temperature electrical components"],
+    avoid: ["Impact loads", "Printers without a high-temperature chamber"],
+    note: "The chemical-resistance champion. Its low Tg of 90 °C is misleading — the crystalline phase carries the load well above it, which is exactly why full crystallisation is non-negotiable.",
+    brands: [
+      { b: "Bambu", p: "PPS-CF", v: "0.05% moisture absorption · insoluble below 200 °C · ~320 °C nozzle", m: "manufacturer data" },
+      { b: "Polymaker", p: "Fiberon PPS-CF10", v: "59.4 MPa · HDT 252.5 °C · Vicat 267.5 °C", m: "ISO 527, annealed" },
+    ],
+  },
+  {
+    id: "ppsgf", name: "PPS-GF", full: "Glass-fibre polyphenylene sulfide", fam: "High-performance",
+    struct: "Semi-crystalline", fiber: "GF", tg: 90, tm: 280, clarity: "Opaque",
+    nozzle: [300, 340], bed: [110, 140], fan: [0, 0], minHotend: 330,
+    fanNote: "No fan; hot chamber essential.",
+    enc: 2, hard: true, dry: "Required",
+    anneal: { temp: "150–200 °C, several hours", gain: "Completes crystallisation and locks in heat resistance" },
+    glue: "Abrade plus plasma, then high-temperature epoxy", glueAvoid: "No solvent welding",
+    tensile: 64, tLo: 58, tHi: 72, zRatio: 0.35, modulus: 4000, impact: 7.3, elong: 2,
+    hdt: 236, density: 1.36, cost: [85, 150], diff: 5, uv: 3, chem: 5, tough: 4, conf: "high",
+    pros: ["Slightly stronger and noticeably tougher than the carbon-fibre version", "Electrically insulating, which matters for high-temperature electrical parts", "Same near-total chemical resistance"],
+    cons: ["Denser at 1.36, so parts are heavier", "Slightly lower HDT than PPS-CF", "Same extreme hardware requirements"],
+    use: ["High-temperature electrical insulation", "Chemical plant components", "Sensor housings"],
+    avoid: ["Weight-critical parts", "Standard desktop printers"],
+    note: "Polymaker's own figures make the fibre trade explicit within PPS: glass gives 64.1 MPa and 7.3 kJ/m² impact against carbon's 59.4 MPa and 5.3 kJ/m².",
+    brands: [{ b: "Polymaker", p: "Fiberon PPS-GF20", v: "64.1 MPa · HDT 236.3 °C · Charpy 7.3 kJ/m²", m: "ISO 527, annealed" }],
+  },
+];
+
+const EXT = {
+  petg:{creep:2,fatigue:3,wear:2,hygro:3,cw:5,co:4,cs:3,ca:4},
+  pctg:{creep:2,fatigue:4,wear:2,hygro:3,cw:5,co:4,cs:3,ca:4},
+  abs:{creep:3,fatigue:3,wear:2,hygro:2,cw:4,co:2,cs:1,ca:3},
+  asa:{creep:3,fatigue:3,wear:2,hygro:2,cw:5,co:3,cs:1,ca:4},
+  pc:{creep:4,fatigue:4,wear:3,hygro:4,cw:3,co:3,cs:1,ca:2},
+  pmma:{creep:3,fatigue:2,wear:2,hygro:2,cw:4,co:3,cs:1,ca:3},
+  pvb:{creep:1,fatigue:2,wear:1,hygro:5,cw:1,co:2,cs:1,ca:2},
+  hips:{creep:2,fatigue:2,wear:2,hygro:2,cw:4,co:2,cs:1,ca:3},
+  pei:{creep:5,fatigue:4,wear:3,hygro:2,cw:5,co:4,cs:2,ca:4},
+  petgcf:{creep:3,fatigue:3,wear:3,hygro:3,cw:5,co:4,cs:3,ca:4},
+  asacf:{creep:4,fatigue:3,wear:3,hygro:2,cw:5,co:3,cs:1,ca:4},
+  absgf:{creep:4,fatigue:3,wear:3,hygro:2,cw:4,co:2,cs:1,ca:3},
+  pccf:{creep:5,fatigue:4,wear:3,hygro:4,cw:3,co:3,cs:1,ca:2},
+  pla:{creep:1,fatigue:1,wear:2,hygro:2,cw:2,co:3,cs:2,ca:2},
+  plaplus:{creep:1,fatigue:2,wear:2,hygro:2,cw:2,co:3,cs:2,ca:2},
+  htpla:{creep:2,fatigue:2,wear:2,hygro:2,cw:2,co:3,cs:2,ca:2},
+  copa:{creep:3,fatigue:5,wear:5,hygro:5,cw:2,co:5,cs:5,ca:2},
+  pp:{creep:3,fatigue:5,wear:3,hygro:1,cw:5,co:5,cs:5,ca:5},
+  pom:{creep:5,fatigue:5,wear:5,hygro:1,cw:5,co:5,cs:5,ca:1},
+  tpu:{creep:2,fatigue:5,wear:5,hygro:4,cw:3,co:4,cs:3,ca:3},
+  peek:{creep:5,fatigue:5,wear:5,hygro:2,cw:5,co:5,cs:5,ca:5},
+  placf:{creep:2,fatigue:1,wear:2,hygro:2,cw:2,co:3,cs:2,ca:2},
+  htplagf:{creep:3,fatigue:2,wear:3,hygro:2,cw:2,co:3,cs:2,ca:2},
+  petcf:{creep:4,fatigue:3,wear:3,hygro:3,cw:4,co:4,cs:3,ca:3},
+  pa6cf:{creep:4,fatigue:4,wear:4,hygro:5,cw:2,co:5,cs:5,ca:2},
+  pa6gf:{creep:4,fatigue:4,wear:4,hygro:5,cw:2,co:5,cs:5,ca:2},
+  pahtcf:{creep:4,fatigue:4,wear:4,hygro:3,cw:3,co:5,cs:5,ca:2},
+  ppacf:{creep:5,fatigue:4,wear:4,hygro:2,cw:4,co:5,cs:5,ca:3},
+  ppa:{creep:5,fatigue:5,wear:5,hygro:3,cw:4,co:5,cs:5,ca:3},
+  ppagf:{creep:5,fatigue:4,wear:4,hygro:2,cw:4,co:5,cs:5,ca:3},
+  ppacfcore:{creep:5,fatigue:4,wear:4,hygro:2,cw:4,co:5,cs:5,ca:3},
+  ppa:{creep:5,fatigue:5,wear:5,hygro:3,cw:4,co:5,cs:5,ca:3},
+  ppagf:{creep:5,fatigue:4,wear:4,hygro:2,cw:4,co:5,cs:5,ca:3},
+  ppacfcore:{creep:5,fatigue:4,wear:4,hygro:2,cw:4,co:5,cs:5,ca:3},
+  ppscf:{creep:5,fatigue:4,wear:4,hygro:1,cw:5,co:5,cs:5,ca:5},
+  ppsgf:{creep:5,fatigue:4,wear:4,hygro:1,cw:5,co:5,cs:5,ca:5},
+};
+M.forEach(m => Object.assign(m, EXT[m.id] || {creep:3,fatigue:3,wear:3,hygro:3,cw:3,co:3,cs:3,ca:3}));
+
+/* ================= SAFETY DATA =================
+   food: 0 unsuitable · 1 avoid · 2 limited · 3 base polymer ok · 4 good · 5 food-contact grades widely available
+   fume: 1 low · 2 moderate · 3 notable · 4 high · 5 serious
+   vent: 0 room air · 1 open window · 2 enclosure + filter · 3 active extraction
+   Sources: peer-reviewed FFF chamber-emission studies (UFP + speciated VOC),
+   IARC monograph classifications, manufacturer food-contact declarations.
+================================================= */
+const SAFETY={
+ pla:{food:4,fume:1,vent:1,voc:'Lactide',
+   fd:'Base polymer is food-contact approved and among the safest here, but colourants vary by brand and it softens near 55 °C, so it cannot be washed in hot water or a dishwasher.',
+   fm:'Lowest VOC output of any common filament. Still emits ultrafine particles like every FDM material.'},
+ plaplus:{food:3,fume:1,vent:1,voc:'Lactide + impact modifiers',
+   fd:'The impact modifiers are rarely declared food-grade even when the PLA base is. Treat as non-food unless the brand states otherwise.',
+   fm:'Similar to plain PLA.'},
+ htpla:{food:3,fume:1,vent:1,voc:'Lactide',
+   fd:'Nucleating additives are not usually food-declared. Annealing does raise the wash temperature considerably.',
+   fm:'Similar to plain PLA.'},
+ placf:{food:0,fume:2,vent:2,voc:'Lactide + fibre particulate',
+   fd:'Not for food contact. Exposed fibre ends at the surface cannot be cleaned and may shed.',
+   fm:'Sanding or machining releases carbon fibre dust — wear a mask and do not dry-sand.'},
+ htplagf:{food:0,fume:2,vent:2,voc:'Lactide + fibre particulate',
+   fd:'Not for food contact.',fm:'Glass fibre dust when sanding — wear a mask.'},
+ petg:{food:5,fume:1,vent:1,voc:'Low',
+   fd:'The best food-contact option here. Many grades carry FDA 21 CFR 177.1315 declarations, it resists water and mild acids, and it tolerates roughly 70 °C.',
+   fm:'Low emissions, though they rise noticeably above 245 °C.'},
+ pctg:{food:4,fume:1,vent:1,voc:'Low',
+   fd:'Same copolyester chemistry as PETG; check the specific grade for a food declaration.',
+   fm:'Low emissions.'},
+ petgcf:{food:0,fume:2,vent:2,voc:'Fibre particulate',
+   fd:'Not for food contact.',fm:'Fibre dust when sanding.'},
+ abs:{food:0,fume:4,vent:2,voc:'Styrene',
+   fd:'Not for food contact. Residual styrene monomer can migrate, and acetone smoothing leaves solvent traces.',
+   fm:'Emits styrene at roughly 10–110 µg/min — IARC Group 2A, probably carcinogenic to humans. One of the two highest-emitting material families. An enclosure with carbon and HEPA filtration is the minimum; never run it in a bedroom or an unventilated room.'},
+ absgf:{food:0,fume:4,vent:2,voc:'Styrene + fibre',
+   fd:'Not for food contact.',fm:'Styrene as ABS, plus glass fibre dust when sanding.'},
+ asa:{food:0,fume:5,vent:2,voc:'Styrene + acrylonitrile',
+   fd:'Not for food contact.',
+   fm:'Measured as the highest VOC emitter of the common materials. Styrene plus acrylonitrile. Treat an enclosure with active filtration as mandatory, not optional.'},
+ asacf:{food:0,fume:5,vent:2,voc:'Styrene + acrylonitrile + fibre',
+   fd:'Not for food contact.',fm:'As ASA, plus fibre dust when sanding.'},
+ hips:{food:0,fume:4,vent:2,voc:'Styrene',
+   fd:'Not for food contact.',
+   fm:'Emits styrene at levels comparable to ABS. Limonene used to dissolve it is also an irritant — use it in ventilated space.'},
+ pc:{food:1,fume:3,vent:2,voc:'BPA (some grades), oligomers',
+   fd:'Avoid. Many PC grades contain bisphenol A, which migrates more readily into hot or fatty foods. BPA-free copolyesters exist but are not what most PC filament is.',
+   fm:'Prints at 270–300 °C, and emissions rise sharply with temperature. Ventilate and filter.'},
+ pccf:{food:0,fume:3,vent:2,voc:'BPA + fibre',
+   fd:'Not for food contact.',fm:'As PC, plus fibre dust.'},
+ pmma:{food:2,fume:3,vent:1,voc:'MMA monomer',
+   fd:'Some acrylic grades are food-approved, but layer lines make cleaning impractical and it is brittle in service.',
+   fm:'Residual methyl methacrylate monomer is a respiratory and eye irritant with a strong odour.'},
+ pvb:{food:1,fume:2,vent:1,voc:'Butyral, plus IPA during smoothing',
+   fd:'Avoid. It softens and clouds in moisture, so it will not survive washing.',
+   fm:'Printing is mild. The isopropyl alcohol smoothing step needs real ventilation and no ignition source.'},
+ pei:{food:2,fume:3,vent:3,voc:'Thermal decomposition products',
+   fd:'Some ULTEM grades are food and even medical approved, but the 400 °C processing puts it out of reach for most.',
+   fm:'Requires 380–400 °C. Active extraction is essential — this is industrial-machine territory.'},
+ pp:{food:5,fume:1,vent:1,voc:'Very low',
+   fd:'Excellent. Polypropylene is the standard polymer for food containers, resists boiling water, is dishwasher-safe and takes no colourant to be inert.',
+   fm:'Among the lowest emitters of any filament.'},
+ pom:{food:2,fume:5,vent:3,voc:'FORMALDEHYDE',
+   fd:'Some acetal grades are food-approved for utensils, but the formaldehyde risk makes it a poor choice for home printing.',
+   fm:'The most serious hazard in this database. POM is polymerised formaldehyde and depolymerises back into it above roughly 230 °C. Formaldehyde is IARC Group 1 — a known human carcinogen. Never exceed 230 °C, never let it sit hot in the nozzle, and use active extraction. If you smell a sharp pungent odour, stop the print and ventilate the room.'},
+ copa:{food:2,fume:4,vent:2,voc:'Caprolactam',
+   fd:'Some nylon grades are food-approved, but nylon absorbs water and the resulting damp layer lines are difficult to keep hygienic.',
+   fm:'Caprolactam is the single largest VOC emission measured from any filament, up to about 180 µg/min — more by mass than styrene from ABS. It irritates eyes and airways. Nylon is also a high particle emitter. Ventilate properly.'},
+ pa6cf:{food:0,fume:4,vent:2,voc:'Caprolactam + fibre',
+   fd:'Not for food contact.',fm:'As nylon, plus carbon fibre dust when sanding.'},
+ pa6gf:{food:0,fume:4,vent:2,voc:'Caprolactam + fibre',
+   fd:'Not for food contact.',fm:'As nylon, plus glass fibre dust.'},
+ pahtcf:{food:0,fume:3,vent:2,voc:'Amide volatiles + fibre',
+   fd:'Not for food contact.',fm:'Lower caprolactam than PA6 but still needs filtration.'},
+ ppa:{food:1,fume:3,vent:2,voc:'Amide volatiles',
+   fd:'Avoid without a specific declaration from the manufacturer.',
+   fm:'High processing temperature raises emissions. Enclosure with filtration.'},
+ ppagf:{food:0,fume:3,vent:2,voc:'Amide volatiles + fibre',
+   fd:'Not for food contact.',fm:'As PPA, plus glass fibre dust.'},
+ ppacf:{food:0,fume:3,vent:2,voc:'Amide volatiles + fibre',
+   fd:'Not for food contact.',fm:'As PPA, plus carbon fibre dust.'},
+ ppacfcore:{food:0,fume:3,vent:2,voc:'Amide volatiles + fibre',
+   fd:'Not for food contact.',
+   fm:'The unfilled outer shell means less fibre is exposed at the surface, which modestly reduces dust when handling and sanding.'},
+ petcf:{food:0,fume:2,vent:2,voc:'Fibre particulate',
+   fd:'Not for food contact, though the PET base itself is the polymer used for drink bottles.',
+   fm:'Moderate. Fibre dust when sanding.'},
+ tpu:{food:2,fume:2,vent:1,voc:'Low, isocyanate traces at high temperature',
+   fd:'Some TPU grades are food-approved for seals, but check the specific grade.',
+   fm:'Low at normal temperatures. Do not overheat — degradation products are irritants.'},
+ peek:{food:4,fume:3,vent:3,voc:'Thermal decomposition products',
+   fd:'PEEK is food-approved and even implant-grade, and steam sterilisable, which is rare here. Layer lines remain the limiting factor, not the polymer.',
+   fm:'Processing at 400–450 °C demands active extraction.'},
+ ppscf:{food:0,fume:4,vent:3,voc:'Sulfur compounds + fibre',
+   fd:'Not for food contact.',
+   fm:'Sulfur-containing volatiles at 320 °C+, with a distinctive unpleasant odour. Active extraction required.'},
+ ppsgf:{food:0,fume:4,vent:3,voc:'Sulfur compounds + fibre',
+   fd:'Not for food contact.',fm:'As PPS-CF, plus glass fibre dust.'}
+};
+M.forEach(m=>Object.assign(m,SAFETY[m.id]||{food:1,fume:3,vent:2,voc:'—',fd:'No data.',fm:'No data.'}));
+
+const FOOD_L=['Unsuitable','Avoid','Limited','Base polymer OK','Good','Food-contact grades'];
+const VENT_L=['Room air is fine','Open a window','Enclosure + filter','Active extraction'];
+const FOOD_L_AR=['غير صالح','تجنّبه','محدود','البوليمر الأساسي مقبول','جيد','درجات معتمدة للتلامس الغذائي'];
+const VENT_L_AR=['هواء الغرفة كافٍ','افتح نافذة','حاضنة مع فلتر','شفط هواء فعّال'];
+
+
+/* ================= Arabic material prose =================
+   f=full name  n=note  p=pros  c=cons  u=good for  a=avoid
+========================================================== */
+const AR_M={
+petg:{f:'بولي إيثيلين تيريفثاليت مُعدَّل بالجلايكول',
+ n:'التعديل بالجلايكول موجود تحديداً لمنع التبلور. لهذا السبب PETG شفاف وقليل الالتواء ولا تؤثر فيه المعالجة الحرارية — لا يوجد طور بلوري لينمو.',
+ p:['أفضل التصاق بين الطبقات ضمن الخامات السهلة — قيمة Z قريبة من XY','يمطّ ويستسلم بدل أن ينكسر فجأة','شفاف في الدرجات الطبيعية، ومقاوم فعلياً للماء والزيوت'],
+ c:['صلابته نحو ٦٠٪ فقط من PLA','يترك خيوطاً باستمرار وأداؤه ضعيف في الجسور','يلتصق بقوة بسطح PEI الأملس حتى إنه قد يقتلعه — استخدم لاصق الغراء كعازل'],
+ u:['حوامل وظيفية','صناديق وأغلفة','أغطية شفافة','تجهيزات خارجية'],
+ a:['جدران رقيقة تحتاج صلابة','تفاصيل دقيقة','حرارة دائمة فوق ٧٥ °م']},
+pctg:{f:'كوبوليستر غني بـ CHDM',
+ n:'هو PETG مع رفع مستوى المتانة. إذا كانت قطعة PETG تتشقق عند نقطة تركيز إجهاد، فهذا هو البديل المباشر.',
+ p:['أمتن بوضوح من PETG مع شفافية أفضل','التصاق ممتاز بين الطبقات، شبه متساوي الخواص','درجة تحول زجاجي أعلى من PETG مقابل فرق سعر بسيط'],
+ c:['أقل توفراً من PETG','ما زال ليّناً وسهل الخدش','يحتاج طباعة أبطأ لأفضل نتيجة'],
+ u:['أغلفة شفافة','أغطية مقاومة للصدم','موجهات ضوء'],
+ a:['حرارة عالية','أجزاء إنشائية صلبة']},
+abs:{f:'أكريلونيتريل بوتادايين ستايرين',
+ n:'غير متبلور، فلا طور بلوري ولا نقطة انصهار — يلين تدريجياً فوق ١٠٥ °م بدل أن ينصهر فجأة. هذا اللين التدريجي هو ما يجعله قابلاً للتشكيل الحراري والتنعيم بالأسيتون.',
+ p:['يُلحَم ويُنعَّم بالأسيتون — تصبح الوصلات غير مرئية','متين ومطيل عند ١٨ كيلوجول/م²','أقل كثافة هنا عند ١٫٠٥، فالكيلو الواحد يعطي قطعاً أكثر بنحو ١٨٪ من PLA'],
+ c:['يلتوي بشدة؛ الحاضنة المسخّنة ضرورية عملياً','يُطلق الستايرين — يجب التهوية','يتفتت ويبهت تحت أشعة الشمس'],
+ u:['أجزاء الصناديق والطابعات','تجميعات ملحومة بالمذيبات','داخليات السيارات'],
+ a:['التعرض للشمس','الطابعات المفتوحة','الغرف غير المهوّاة']},
+asa:{f:'أكريلونيتريل ستايرين أكريليت',
+ n:'الاتجاه يهم في ASA أكثر من أي خامة أخرى في هذا الجدول. صمّم مسار الحِمل في المستوى XY أو اقبل بخسارة ثلثي المقاومة.',
+ p:['خامة الاستخدام الخارجي — ثابت فعلياً تحت الأشعة فوق البنفسجية لسنوات','مقاومة حرارة ABS مع صمود أفضل أمام الطقس ومقاومة أعلى','قابل للّحام بالمذيبات وللتنعيم'],
+ c:['أسوأ التصاق بين الطبقات هنا — قد تهبط Z إلى ٣٠٪ من XY','يلتوي بقدر ABS','نفس أبخرة الستايرين'],
+ u:['تجهيزات خارجية','أجزاء خارجية للسيارات','أذرع درون','تجهيزات الحدائق والأسطح'],
+ a:['أحمال عبر خطوط الطبقات','الطابعات المفتوحة']},
+pc:{f:'بولي كربونات وخلائطه',
+ n:'قاست اختبارات مستقلة Prusament PC Blend عند نحو ٦٨ ميجاباسكال مسطحاً، لكن ٣٥ فقط عبر الطبقات — و٢٥ عند الطباعة بفوهة فولاذية مقسّاة. مادة الفوهة متغيّر تصميمي حقيقي هنا.',
+ p:['أقوى خيار غير مقوّى على طابعة مكتبية','شفاف بصرياً وأعلى Tg بين البوليمرات غير المتبلورة الشائعة','الخلائط المقوّاة ضد الصدم تصل إلى ٢١ كيلوجول/م²'],
+ c:['يحتاج فوهة ٢٧٠–٣٠٠ °م ومنصة فوق ١١٠ °م وحاضنة ساخنة','يمتص الرطوبة ويلتوي بشدة','مقاومة ضعيفة للمذيبات — يتشقق تحت الإجهاد بسهولة'],
+ u:['حوامل إنشائية','عدسات وأغطية إضاءة','أغلفة عالية الحرارة'],
+ a:['التلامس مع المذيبات','الطابعات المفتوحة']},
+pmma:{f:'أكريليك / بولي ميثيل ميثاكريلات',
+ n:'الخامة الوحيدة هنا التي تتفوق على PC في وضوحها البصري على المدى الطويل، لأن الأكريليك لا يصفرّ. وهو يدفع ثمن ذلك بانعدام المتانة تقريباً.',
+ p:['أفضل وضوح بصري متاح، ويبقى صافياً تحت الأشعة فوق البنفسجية','يُلحَم بالمذيبات بشكل ممتاز لتجميعات بلا فواصل','يُصقل حتى يشبه الزجاج'],
+ c:['هشّ جداً — أقل مقاومة صدم في قاعدة البيانات','يتشقق أثناء الطباعة إذا برد بشكل غير متجانس','مقاومة ضعيفة للمذيبات والمواد الكيميائية'],
+ u:['موجهات ضوء وعدسات','قطع عرض','لافتات شفافة'],
+ a:['أي حِمل صدمي','التعرض الكيميائي','مشابك رفيعة']},
+pvb:{f:'بولي فينيل بوتيرال',
+ n:'يُختار من أجل المظهر النهائي لا الخواص الميكانيكية. التنعيم بالكحول الأيزوبروبيلي هو الهدف كله — يجعل القطع الشفافة تبدو مصبوبة دون الحاجة لخزانة أبخرة.',
+ p:['يُنعَّم حتى لمعان شبه شفاف بكحول أيزوبروبيلي رخيص — بلا أسيتون','يُطبع بسهولة تقارب PLA','التصاق جيد بين الطبقات'],
+ c:['مقاومة ضعيفة جداً للرطوبة — يلين ويتعكر في الجو الرطب','مقاومة حرارة منخفضة','متخصص وغالي مقارنة بخواصه'],
+ u:['نماذج عرض شفافة','مزهريات ومصابيح','نماذج أولية منعّمة'],
+ a:['أي شيء خارجي أو رطب','أجزاء حاملة للأحمال']},
+hips:{f:'بوليسترين عالي المقاومة للصدم',
+ n:'يُشترى غالباً كخامة دعم لا كخامة قطع — ميزته أن الليمونين يذيبه دون أن يمسّ ABS.',
+ p:['يذوب في الليمونين، وهو خامة الدعم الكلاسيكية لـ ABS','خفيف ومتين بشكل معقول','يُبرَد ويُصنفر بنظافة'],
+ c:['ضعيف مقارنة بكل ما سواه هنا','يلتوي مثل ABS','مقاومة ضعيفة للأشعة والمواد الكيميائية'],
+ u:['دعم قابل للذوبان لـ ABS/ASA','نماذج خفيفة','قطع تُصنفر وتُدهن'],
+ a:['الأحمال الإنشائية','الاستخدام الخارجي']},
+pei:{f:'بولي إيثر إيميد',
+ n:'ميزته الأساسية على PEEK أنه غير متبلور فلا يحتاج معالجة حرارية وانكماشه متوقَّع — تحصل على الأداء الحراري العالي مباشرة من على المنصة.',
+ p:['غير متبلور، فيحافظ على دقة الأبعاد بانكماش أقل بكثير من PEEK','مثبّط للهب بطبيعته ودخانه قليل جداً — معتمد في الطيران','حرارة تشغيل نحو ٢٠٠ °م بلا أي معالجة حرارية'],
+ c:['يحتاج فوهة ٤٠٠ °م وحاضنة مسخّنة فوق ١٤٠ °م','غالي جداً','مقاومة ضعيفة للمذيبات المكلورة'],
+ u:['حوامل طيران','أغلفة مثبِّطة للهب','عدد تتحمل التعقيم'],
+ a:['أي طابعة بلا حاضنة مسخّنة','المشاريع محدودة الميزانية']},
+petgcf:{f:'PETG مقوّى بألياف الكربون',
+ n:'لأن PETG غير متبلور، تضيف الألياف صلابة لكنها لا تستطيع تحفيز التبلور — فلا مكسب في مقاومة الحرارة، بخلاف PA-CF أو PPS-CF.',
+ p:['أصلب من PETG العادي بنحو ٦٥٪، بملمس مطفي وبلا خيوط تقريباً','يحتفظ بمقاومة PETG الكيميائية','يُطبع بدون حاضنة'],
+ c:['يفقد مطيلية PETG ويصبح حساساً للشقوق','كاشط — يتطلب فوهة مقسّاة','لا مكسب يُذكر في مقاومة الحرارة'],
+ u:['أغلفة صلبة','هياكل درون','ألواح مطفية'],
+ a:['أحمال الصدم','المشابك والمفصلات الحية']},
+asacf:{f:'ASA مقوّى بألياف الكربون',
+ n:'المكسب العملي الأساسي بُعدي: ألياف الكربون تقلل التواء ASA بما يكفي لجعل القطع الخارجية الكبيرة واقعية.',
+ p:['متانة ASA الخارجية مع التواء أقل بوضوح — الألياف تكبح الانكماش','أصلب كثيراً من ASA العادي','ملمس مطفي جذاب يخفي خطوط الطبقات'],
+ c:['المتانة تهبط إلى النصف تقريباً مقارنة بـ ASA العادي','كاشط','ما زال يحتاج حاضنة'],
+ u:['أجزاء إنشائية خارجية','حوامل هوائيات وأسطح','أجزاء خارجية للسيارات'],
+ a:['القطع الحرجة ضد الصدم']},
+absgf:{f:'ABS مقوّى بألياف زجاجية',
+ n:'المثال الأوضح على المفاضلة بين الكربون والزجاج: الزجاج يعطي صلابة أقل لكنه يحتفظ بمقاومة صدم أعلى، ويعزل كهربائياً، ويقبل الألوان.',
+ p:['يحتفظ بمتانة أعلى من المكافئ المقوّى بالكربون','عازل كهربائياً بخلاف الكربون','متوفر بألوان — الألياف الزجاجية لا تفرض اللون الأسود'],
+ c:['أكثف من ABS العادي فالقطع أثقل','كاشط؛ يتطلب فوهة مقسّاة','مكسب صلابة أقل من الكربون عند نفس النسبة'],
+ u:['أجزاء إنشائية عازلة','مكونات هندسية ملونة','عدد وتجهيزات'],
+ a:['القطع الحساسة للوزن','ما يحتاج توصيلاً كهربائياً']},
+pccf:{f:'بولي كربونات مقوّى بألياف الكربون',
+ n:'من الطرق القليلة للحصول على حرارة تشغيل ١٣٠ °م بلا أي معالجة لاحقة، لأن البوليمرات غير المتبلورة لا تحتاج خطوة تبلور.',
+ p:['صلابة عالية جداً مع مقاومة حرارة PC وبلا معالجة حرارية','يلتوي أقل بكثير من PC غير المقوّى','ثبات أبعاد ممتاز للعدد والتجهيزات'],
+ c:['يفقد متانة PC المميزة','يحتاج فوهة ٣٠٠ °م ومقسّاة وحاضنة','غالي'],
+ u:['قوالب وتجهيزات','حوامل إنشائية عالية الحرارة','هياكل درون'],
+ a:['أحمال الصدم','التلامس مع المذيبات']},
+pla:{f:'حمض البولي لاكتيك',
+ n:'شبه متبلور نظرياً لكنه يتبلور ببطء شديد حتى إن القطع المطبوعة تخرج بنسبة تبلور ٥–١٠٪ فقط — أي غير متبلورة عملياً. ولهذا تعمل المعالجة الحرارية عليه بهذه القوة، ولهذا يتحول PLA الشفاف إلى أبيض معتم بعدها.',
+ p:['أصلب الخامات الشائعة عند نحو ٣٠٠٠ ميجاباسكال','يُطبع على أي جهاز، التواء ضئيل، وأفضل تفاصيل دقيقة','الأرخص، وشفاف في درجاته الطبيعية لأنه لا يكاد يتبلور'],
+ c:['يلين عند ٥٥–٦٠ °م — سيارة واقفة في الشمس تشوّهه','هشّ جداً عند نحو ٣٫٥ كيلوجول/م²','يزحف تحت الحِمل الدائم في حرارة الغرفة'],
+ u:['نماذج أولية','قوالب وتجهيزات','مجسمات عرض','حوامل داخلية خفيفة'],
+ a:['الشمس المباشرة','داخل السيارات','الحِمل الدائم']},
+plaplus:{f:'PLA مُعدَّل لمقاومة الصدم (PLA+، PolyMax)',
+ n:'يقيس PolyMax من بوليميكر ٣٨٫٩ كيلوجول/م² مقابل ٣٫٣ لـ PLA العادي من نفس الشركة — فرق بمرتبة عشرية كاملة على نفس إعدادات الطباعة.',
+ p:['مقاومة صدم أعلى ٥–١٠ أضعاف من PLA العادي بلا صعوبة إضافية','ينثني ويستسلم بدل أن يتشظى','نفس الإعدادات السهلة، بلا حاضنة'],
+ c:['يتنازل عن نحو ١٥٪ من مقاومة الشد و١٥٪ من الصلابة','مقاومة الحرارة لم تتغير — ما زال ينهار عند ٥٥ °م','التسميات غير موحّدة بين الشركات'],
+ u:['قطع تُمسك باليد','هياكل RC ودرون','ألعاب','مقابض عدد'],
+ a:['البيئات الساخنة','التعرض للأشعة','الحِمل الساكن']},
+htpla:{f:'PLA عالي الحرارة',
+ n:'PLA مُحفَّز ليتبلور بسرعة كافية ليكون عملياً. وهو أوضح برهان في قاعدة البيانات على ما يمنحه التبلور: نفس عائلة البوليمر، و٤٦ °م إضافية في حرارة التشغيل.',
+ p:['سهولة طباعة PLA مع مقاومة حرارة بمستوى البولي كربونات بعد المعالجة','لا يحتاج حاضنة لطباعته','التواء قليل جداً لخامة تتحمل ١٠٠ °م'],
+ c:['لا يبلغ هذه الأرقام إلا بعد معالجة في فرن تُحدث انكماشاً وتشوّهاً','ما زال هشّاً — المعالجة ترفع الحرارة لا المتانة','كيمياء حديثة ببيانات ميدانية أقل'],
+ u:['قطع داخل السيارات الساخنة','حوامل قرب رؤوس التسخين','حرارة بلا حاضنة'],
+ a:['أحمال الصدم','أبعاد دقيقة لا تحتمل انكماش المعالجة']},
+copa:{f:'كوبولي أميد، غير مقوّى',
+ n:'الماء يعمل كملدِّن في النايلون: القطعة المشبعة لها Tg ومعامل مرونة أقل بوضوح من النشرة. الانضباط في التخزين هنا أهم من إعدادات الطباعة.',
+ p:['متانة ومقاومة كلل استثنائية — خامة المفصلات الحية','احتكاك منخفض وذاتي التزليق؛ مثالي للتروس والمحامل','أفضل مقاومة كيميائية بين الخيارات غير المقوّاة'],
+ c:['شديد امتصاص الرطوبة — يمتص خلال ساعات ما يفسد الطباعة','الأبعاد تتغير مع رطوبة الجو حتى بعد الطباعة','يلتوي بشدة؛ الحاضنة مطلوبة'],
+ u:['تروس ومحامل','مفصلات حية','قطع تتعرض لإجهاد متكرر'],
+ a:['البيئات الرطبة بلا عزل','الأبعاد الدقيقة','التعرض للأشعة']},
+pp:{f:'بولي بروبيلين',
+ n:'أقل كثافة وأسوأ التصاق في هذا الجدول، وللسبب نفسه: PP بولي أوليفين غير قطبي. اطبعه على شريط تغليف بولي بروبيليني وسيتصرف بشكل جيد.',
+ p:['أخف فتيلة متاحة عند ٠٫٩٠ غم/سم³ — يطفو على الماء','مقاومة كيميائية فائقة وعمر كلل ممتاز؛ مفصلات حية رائعة','استطالة عالية جداً، يكاد يستحيل كسره بالثني'],
+ c:['يلتوي وينكمش أكثر من أي شيء تقريباً','التصاقه بالمنصة سيئ الصيت — يحتاج شريطاً أو لوح PP','صلابة ومقاومة منخفضتان جداً'],
+ u:['حاويات كيميائية','مفصلات حية','أدوات مختبر','قطع إحكام'],
+ a:['الأحمال الإنشائية','أي شيء تحتاج لصقه','الأبعاد الدقيقة']},
+pom:{f:'أسيتال / بولي أوكسي ميثيلين (دلرين)',
+ n:'عالي التبلور — نحو ٧٥٪ — وهذا بالضبط سبب انزلاقه ومتانته وثباته البعدي، وسبب أن لا شيء يلتصق به، بما في ذلك منصة الطباعة.',
+ p:['أقل معامل احتكاك بين الفتائل الشائعة — خامة التروس والمحامل','مقاومة كلل وثبات أبعاد ممتازان بعد المعالجة','قوي وصلب مع مطيلية حقيقية'],
+ c:['التصاق سيئ جداً بالمنصة؛ ينكمش نحو ٢٪','لا يُلصق ولا يُدهن بدون معالجة سطحية قاسية','يُطلق الفورمالدهيد عند ارتفاع حرارته — التهوية إلزامية'],
+ u:['تروس','محامل وجلب','أسطح انزلاق','مشابك'],
+ a:['التجميعات الملصوقة','القطع المدهونة','الفوهات المفرطة الحرارة']},
+tpu:{f:'بولي يوريثان حراري اللدونة',
+ n:'بوليمر كتلي لا بوليمر بسيط: قطع بلورية صلبة تعمل كروابط فيزيائية داخل مصفوفة مطاطية غير متبلورة. صلادة الشور أهم بكثير من مقاومة الشد عند الاختيار.',
+ p:['لا يُكسر عملياً — استطالة تتجاوز ٥٠٠٪','شبه متساوي الخواص: Z نحو ٩٠٪ من XY، الأفضل هنا','مقاومة تآكل ممتازة وتخميد اهتزاز'],
+ c:['بطيء — ابقَ تحت ٨٠ مم/ث تقريباً','يحتاج دفعاً مباشراً؛ أنظمة بودن تعاني معه','شديد امتصاص الرطوبة، ودقته البعدية ضعيفة'],
+ u:['حشوات وموانع تسرب','أقدام ومخمّدات','أغطية هواتف','عجلات'],
+ a:['القطع الصلبة أو الدقيقة بعدياً','الطباعة السريعة','طابعات بودن']},
+peek:{f:'بولي إيثر إيثر كيتون',
+ n:'المثال النموذجي على أن حرارة الحاضنة خاصية من خواص الخامة لا رفاهية. اطبع تحت ١٣٣ °م فتحصل على قطعة ضعيفة غير متبلورة إلى حد كبير؛ والمعالجة اللاحقة تستعيد المقاومة لكنها تشوّه الشكل.',
+ p:['تشغيل مستمر قرب ٢٥٠ °م بنسبة مقاومة إلى وزن تشبه المعادن','خمول كيميائي شبه تام ومقاومة تآكل ممتازة','متوافق حيوياً ويتحمل التعقيم بالبخار — يُستخدم في الزرعات'],
+ c:['يحتاج فوهة ٤٥٠ °م وحاضنة مسخّنة نشطة فوق ١٣٠ °م','من أغلى الفتائل المصنوعة','التبلور — وبالتالي الخواص — يعتمد كلياً على التاريخ الحراري'],
+ u:['قطع طيران وطبية','معالجة كيميائية','محامل عالية الحرارة'],
+ a:['أي طابعة بلا حاضنة مسخّنة','الأعمال محدودة الميزانية']},
+placf:{f:'PLA مقوّى بألياف الكربون',
+ n:'مستوى الثقة منخفض عمداً: قيم الشد المنشورة تتراوح بين ٣١ و٦٠ ميجاباسكال حسب نسبة الألياف والراتنج الأساسي. اختبر البكرة تحديداً قبل التصميم عليها.',
+ p:['أصلب خامة تُطبع بسهولة PLA','ملمس مطفي تماماً يخفي خطوط الطبقات','التواء شبه معدوم وخيوط قليلة جداً'],
+ c:['هشّ — ألياف الكربون ترفع الصلابة لا المتانة','كاشط؛ الفوهات النحاسية تتآكل خلال ساعات','لا مكسب في مقاومة الحرارة إطلاقاً'],
+ u:['ألواح تجميلية صلبة','قطع كاميرات و RC'],
+ a:['أحمال الصدم','الحرارة','ما يكون كسره المفاجئ خطراً']},
+htplagf:{f:'PLA عالي الحرارة مقوّى بألياف زجاجية',
+ n:'الألياف تؤدي دورين: تحفّز التبلور فتسرّع المعالجة الحرارية، وتقيّد القطعة فيزيائياً أثناء انكماش ذلك التبلور.',
+ p:['مقاومة وحرارة أعلى من HT-PLA العادي بعد المعالجة','الألياف الزجاجية تقلل تشوّه المعالجة — ميزة عملية حقيقية','ما زال يُطبع بلا حاضنة'],
+ c:['كاشط؛ يتطلب فوهة مقسّاة','هشّ','أكثف من PLA العادي عند ١٫٣٤'],
+ u:['حوامل عالية الحرارة بعد المعالجة','قوالب لأعمال اللحام والحرارة'],
+ a:['أحمال الصدم','قطع لا تحتمل أي انكماش من المعالجة']},
+petcf:{f:'PET مقوّى بألياف الكربون (بعد المعالجة)',
+ n:'بخلاف PETG، يتبلور PET العادي فعلاً — ولهذا يستجيب PET-CF للمعالجة الحرارية بقوة بينما لا يستجيب PETG-CF إطلاقاً. نفس العنصر، وسلوك معاكس.',
+ p:['صلابة عالية جداً تتجاوز ٥٠٠٠ ميجاباسكال مع حرارة عالية بعد المعالجة','أقل حساسية للرطوبة بكثير من مركبات النايلون','ثابت بعدياً ومناسب للتجهيزات الدقيقة'],
+ c:['يحتاج فوهة ٣٠٠ °م ومقسّاة وحاضنة','أرقام الحرارة المعلنة تتطلب معالجة حرارية','هشّ وبطيء الطباعة'],
+ u:['تجهيزات عالية الحرارة','قوالب لحام وكي','قطع تحت غطاء المحرك'],
+ a:['أحمال الصدم','تخطي خطوة المعالجة الحرارية']},
+pa6cf:{f:'نايلون ٦ مقوّى بألياف الكربون',
+ n:'ملك المقاومة النوعية، وصاحب أسوأ تباين اتجاهي هنا. القطعة المصممة بأحمال في المستوى XY تؤدي أداءً ممتازاً؛ ونفس القطعة مُدارة ٩٠ درجة تنهار عند ثلث الحِمل.',
+ p:['من أقوى وأصلب ما تستطيع طابعة مكتبية تشغيله','مقاومة حرارة تقارب ٢٠٠ °م','سلوك ممتاز في التآكل والكلل'],
+ c:['الالتصاق بين الطبقات نحو ثلث مقاومة XY فقط','الأساس PA6 يمتص حتى ٢٫٣٥٪ ماء','غالي، ويحتاج التجهيز الهندسي الكامل'],
+ u:['حوامل إنشائية','قطع حجرة المحرك','عدد إنتاجية نهائية'],
+ a:['الأحمال عبر خطوط الطبقات','التخزين الرطب']},
+pa6gf:{f:'نايلون ٦ مقوّى بألياف زجاجية',
+ n:'مقارنة مباشرة بين الكربون والزجاج في نفس البوليمر الأساسي: ١٠٩ ميجاباسكال و٥٤٦٠ للكربون مقابل ٨٠ و٤٢٠٠ للزجاج، لكن بمقاومة صدم أفضل وبلا توصيل كهربائي.',
+ p:['يحتفظ بمتانة واستطالة أعلى من النسخة الكربونية','عازل كهربائياً — صالح قرب الإلكترونيات والهوائيات','مقاومة حرارة تكاد تساوي PA6-CF بسعر أقل'],
+ c:['مقاومة وصلابة أقل من PA6-CF','أكثف فالقطع أثقل','الزجاج كاشط بقدر الكربون'],
+ u:['أجزاء إنشائية عازلة','حوامل هوائيات','صناديق كهربائية'],
+ a:['القطع الحساسة للوزن','تطبيقات الصلابة القصوى']},
+pahtcf:{f:'بولي أميد عالي الحرارة مقوّى بالكربون',
+ n:'عادةً الخيار الأفضل واقعياً على PA6-CF ما لم تحتج آخر ٢٠٪ من المقاومة — سلوكه تجاه الرطوبة وحده يجعل القطع أكثر قابلية للتكرار.',
+ p:['أقل حساسية للرطوبة بكثير من PA6 — أسهل في الاستخدام اليومي','أمتن من PA6-CF مع احتفاظه بمعظم المقاومة ومقاومة الحرارة','أقل كثافة بين المركبات هنا عند ١٫٠٦'],
+ c:['ما زال يحتاج حاضنة وفوهة مقسّاة وفوهة ٣٠٠ °م','غالي','مقاومة وصلابة مطلقة أقل من PA6-CF'],
+ u:['هياكل درون و RC','قطع إنشائية خفيفة','حوامل في بيئات ساخنة'],
+ a:['المشاريع الحساسة للتكلفة','الطابعات الأساسية']},
+ppa:{f:'بولي فثال أميد، غير مقوّى',
+ n:'معظم PPA المُباع مقوّى بالألياف، لكن الدرجة غير المقوّاة تحتفظ بمتانة النايلون وتزليقه الذاتي بينما يرفع الهيكل شبه العطري درجة التحول الزجاجي إلى نحو ١٢٥ °م. خامة تروس ممتازة حيث ينتفخ PA6.',
+ p:['نحو ٧٠ ميجاباسكال بلا تقوية — أقوى من أي نايلون غير مقوّى هنا','يتشبع عند نحو ٢٫٥٪ ماء مقابل ٩–١٠٪ لـ PA6، فتبقى الأبعاد صادقة','ذاتي التزليق واحتكاكه منخفض، وهو أمر نادر لخامة بهذه القوة'],
+ c:['يحتاج فوهة ٣١٠ °م وحاضنة مسخّنة','غالي','ما زال يمتص ماءً أكثر من PPS أو PET-CF'],
+ u:['تروس ومحامل تحت الحرارة','حوامل سيارات','قطع تآكل تحتاج متانة'],
+ a:['الطابعات المفتوحة','الأعمال الحساسة للتكلفة']},
+ppagf:{f:'بولي فثال أميد مقوّى بألياف زجاجية (١٥٪)',
+ n:'الخيار الطبيعي حين تحتاج عزل PA6-GF ولا تحتمل سلوكه تجاه الرطوبة. قيمة HDT منشورة؛ أما قيمة الشد فمقدَّرة من نسبة الألياف ومصنّفة بثقة متوسطة.',
+ p:['HDT ١٨٥ °م مع بقائه عازلاً كهربائياً — تركيبة نادرة','يحتفظ بمقاومة صدم أعلى من النسخة الكربونية','امتصاص رطوبة منخفض جداً فيلتوي أقل بكثير من PA6-GF'],
+ c:['يحتاج فوهة ٣١٠ °م ومقسّاة وحاضنة','أكثف من الدرجة الكربونية عند ١٫٣٠','قيمة الشد مستنتجة لا منشورة'],
+ u:['قطع عازلة تحت غطاء المحرك','أغلفة كهربائية عالية الحرارة','حوامل طيران'],
+ a:['القطع الحساسة للوزن','الطابعات دون ٣٠٠ °م']},
+ppacf:{f:'بولي فثال أميد مقوّى بألياف الكربون',
+ n:'نايلون شبه عطري: حلقات عطرية جامدة في الهيكل ترفع Tg و Tm كثيراً فوق PA6 العادي. الثقة متوسطة لأن أرقام المقاومة مشتقة من ادعاء مقارن للشركة لا من قيمة شد منشورة وفق ISO.',
+ p:['أقوى وأصلب خامة متاحة على الطابعات المكتبية الشائعة','مصنّفة للتعرض المطوّل عند نحو ٢٢٧ °م','امتصاص رطوبة أقل بنحو الثلثين من PA6-CF فتبقى مستقرة في الرطوبة'],
+ c:['يحتاج فوهة ٣١٠ °م ومقسّاة وحاضنة','غالي جداً','تباين اتجاهي شديد — مقاومة Z نحو ثلث XY'],
+ u:['قطع تحت غطاء المحرك','استبدال المعادن','قوالب صناعية عالية الحِمل'],
+ a:['الأحمال عبر الطبقات','الطابعات المحدودة بـ ٣٠٠ °م']},
+ppacfcore:{f:'PPA بقلب وغلاف — قلب ٢٥٪ كربون وغلاف بلا ألياف',
+ n:'أكثر فتيلة مثيرة للاهتمام معمارياً هنا. كل خامة مقوّاة أخرى في قاعدة البيانات متجانسة، فتقع الألياف المقطّعة في منطقة اللحام بين الطبقات وتقطع الترابط — ولهذا يحتفظ PA6-CF بنحو ٣٣٪ فقط عبر الطبقات. الفتيلة ذات القلب والغلاف تضع بوليمراً خالياً من الألياف عند هذا السطح البيني بالتصميم. إن أدّت كما تدّعي الشركة فهي تهاجم أسوأ نقطة ضعف في مركبات FDM. مصنّفة بثقة منخفضة حتى تُقاس.',
+ p:['فتيلة محورية — ٢٥٪ ألياف كربون في القلب، مغلَّفة بـ PPA بلا ألياف','الغلاف الخالي من الألياف يعني ترابط الطبقات بوليمر مع بوليمر، ما يُفترض أن يرفع مقاومة Z فوق الدرجات الكربونية العادية','الطبقة الخارجية الواقية تقلل تآكل الفوهة رغم نسبة الألياف الأعلى'],
+ c:['ميزة مقاومة Z ادعاء من الشركة لا رقم منشور وفق ISO','أعلى نسبة ألياف هنا، فتوقّع الهشاشة','من أغلى الفتائل خارج PEEK و PEI'],
+ u:['قطع إنشائية محمَّلة عبر الطبقات','حوامل بديلة للمعادن','عدد عالية الحِمل'],
+ a:['القطع الحرجة ضد الصدم','أي ميزانية محدودة']},
+ppscf:{f:'كبريتيد بولي فينيلين مقوّى بألياف الكربون',
+ n:'بطل المقاومة الكيميائية. درجة تحوله الزجاجي المنخفضة ٩٠ °م مضللة — الطور البلوري يحمل الحِمل فوقها بكثير، وهذا بالضبط سبب كون التبلور الكامل غير قابل للتفاوض.',
+ p:['مقاومة كيميائية لا يتفوق عليها سوى PTFE — لا يذوب عملياً تحت ٢٠٠ °م','HDT نحو ٢٥٠ °م ومثبّط للهب بطبيعته','امتصاص رطوبة نحو ٠٫٠٥٪، الأقل هنا — ثبات بعدي صخري'],
+ c:['يحتاج فوهة ٣٤٠ °م وحاضنة ساخنة','هشّ ومقاومة صدمه منخفضة','غالي جداً ويصعب لصقه'],
+ u:['مناولة المواد الكيميائية','قطع تلامس الوقود والزيوت','مكونات كهربائية عالية الحرارة'],
+ a:['أحمال الصدم','الطابعات بلا حاضنة عالية الحرارة']},
+ppsgf:{f:'كبريتيد بولي فينيلين مقوّى بألياف زجاجية',
+ n:'أرقام بوليميكر نفسها توضح مفاضلة الألياف داخل PPS: الزجاج يعطي ٦٤٫١ ميجاباسكال و٧٫٣ كيلوجول/م² مقابل ٥٩٫٤ و٥٫٣ للكربون.',
+ p:['أقوى قليلاً وأمتن بوضوح من النسخة الكربونية','عازل كهربائياً، وهو مهم للقطع الكهربائية عالية الحرارة','نفس المقاومة الكيميائية شبه التامة'],
+ c:['أكثف عند ١٫٣٦ فالقطع أثقل','HDT أقل قليلاً من PPS-CF','نفس المتطلبات القاسية من العتاد'],
+ u:['عزل كهربائي عالي الحرارة','مكونات مصانع كيميائية','أغلفة حساسات'],
+ a:['القطع الحساسة للوزن','الطابعات المكتبية العادية']}
+};
+
+
+
+
+/* ================= language ================= */
+let L=(navigator.language||'en').toLowerCase().startsWith('ar')?'ar':'en';
+try{const sv=localStorage.getItem('fsi-lang'); if(sv==='ar'||sv==='en') L=sv;}catch(e){}
+const t=k=>T[L][k];
+/* must be a function: a const would freeze at load time and never
+   follow a language switch — this was the bug behind mixed-language text */
+const isAr=()=>L==='ar';
+function setLang(v){L=v; try{localStorage.setItem('fsi-lang',v);}catch(e){}
+  document.documentElement.lang=v; document.documentElement.dir=T[v].dir; applyChrome(); render();}
+/* localised material field: falls back to English when a translation is missing */
+const mf=(m,key)=>(L==='ar'&&AR_M[m.id]&&AR_M[m.id][key])?AR_M[m.id][key]:m[key==='f'?'full':key==='n'?'note':key==='p'?'pros':key==='c'?'cons':key==='u'?'use':'avoid'];
+
+
+/* ================= i18n ================= */
+const T={
+ en:{dir:'ltr',lang:'العربية',
+  eyebrow:'FDM material selection',title:'Filament Spec Index',
+  sub:'33 materials · structure, thermal, mechanical · Prusa · Bambu Lab · Polymaker · Siraya Tech',
+  rampL:'190 °C',rampM:'colour = extrusion temperature',rampR:'450 °C',
+  tabs:['Finder','Classes','Compare','Data'],
+  finderLede:'Describe the part and its service conditions. Anything that cannot survive them is ruled out first, then the survivors are ranked on how well they carry your specific load.',
+  q:['What are you making?','Indoor or outdoor?','UV exposure','Service temperature','Chemical contact','Food or skin contact?','How is it loaded?','Load direction relative to layers','Load level','Ventilation you have'],
+  hintApp:'Picking one presets the rest — adjust anything below.',
+  hintLoads:'Pick any that apply. Leave empty for a general ranking.',
+  hintOrient:'The single biggest factor in whether a printed part survives.',
+  hintVent:'Some materials emit hazardous fumes and are ruled out without extraction.',
+  ranked:'Ranked results',survive:'survive your conditions',ruledOut:'Ruled out',
+  noVent:'No material clears this. That is the correct answer, not a gap in the data — <b>every FDM material emits ultrafine particles, including PLA</b>. Published chamber studies found personal exposure exceeded the US PM2.5 standard in over 63% of print runs. An open window is the realistic minimum; a filtered enclosure is better. Select one above to see your options.',
+  none:'Nothing survives all of these conditions. The usual fix is printer capability — an enclosed machine unlocks ABS, ASA, PC and the nylons. Otherwise relax the temperature or chemical requirement.',
+  whyTC:'Why tension and compression rank differently',
+  whyTCb:'A printed part is far stronger in compression than in tension. Compression presses the layers together, so weak interlayer bonds barely matter and effective strength runs roughly <b>1.4×</b> the tensile figure. Tension pulls the layers apart, so a material like ASA at 35% Z-strength loses two-thirds of its rating unless you orient the load into the XY plane.',
+  splitT:'Why this split matters',
+  splitB:'Whether a polymer can form crystals decides four things at once: whether it can be <b>transparent</b>, whether <b>annealing</b> does anything useful, how much it <b>shrinks and warps</b>, and how hard it is to <b>dissolve or glue</b>.',
+  amor:'Amorphous',cryst:'Semi-crystalline',blockc:'Block copolymer',
+  amorSub:'Tg only · no Tm',crystSub:'Tg and Tm',
+  amorL:['Chains stay disordered — softens gradually over Tg instead of melting sharply','<b>Can be transparent</b>: no crystals to scatter light','<b>Annealing does nothing for heat resistance</b> — it only relieves stress','Low, predictable shrinkage — easier tolerances','Usually solvent-weldable, which makes gluing easy','Weaker chemical and fatigue resistance'],
+  crystL:['Chains pack into ordered regions — sharp melting point, load carried well above Tg','<b>Hazy or opaque</b>: crystals scatter light','<b>Annealing raises HDT substantially</b> — often 60 °C to 110 °C','Crystallisation causes shrinkage, so more warp and distortion','Excellent chemical resistance — and therefore very hard to glue','Better fatigue life and wear resistance'],
+  fibT:'Carbon fibre vs glass fibre',
+  fibB:'Both raise stiffness and both wear out brass nozzles. Carbon gives more stiffness per gram and <b>conducts electricity</b>; glass keeps more impact resistance, <b>insulates</b>, and takes colour. In a semi-crystalline base, fibre also nucleates crystallisation — so PA-CF and PET-CF respond strongly to annealing while PETG-CF, being amorphous, does not respond at all.',
+  safeT:'Fumes and food contact — read this',
+  safeB:'<b>Every FDM printer emits ultrafine particles, including PLA.</b> One consolidated study of 447 chamber evaluations found personal exposure exceeded the US PM2.5 standard in over 63% of print runs. The difference between materials is dose, not presence. Nylon emits the most VOC by mass (caprolactam, up to ~180 µg/min), ABS and HIPS emit styrene (IARC Group 2A), and <b>POM releases formaldehyde — IARC Group 1, a known human carcinogen</b> — if it is overheated past 230 °C.<br><br>Separately, <b>a food-safe filament does not make a food-safe part.</b> Layer lines are crevices that cannot be sanitised, standard <b>brass nozzles contain lead</b>, and most materials deform in a dishwasher. For repeated food contact use a stainless or hardened steel nozzle, then seal the part with a food-safe epoxy — or print a mould instead of the part itself.',
+  unfilled:'unfilled',cf:'carbon fibre',gf:'glass fibre',
+  cmpLede:'Pick up to four. The pale block is XY strength; the solid block inside is strength across layer lines. That gap is where printed parts actually fail.',
+  charts:['Tensile strength','Stiffness','Toughness','Heat · HDT','Glass transition · Tg','Density','Street price','Strength vs heat'],
+  chartsU:['MPa · pale = XY, solid = across layers',"Young's modulus, MPa",'normalised 0–10','at 0.45 MPa, °C','°C','g/cm³ · lower is lighter','USD per kg','bubble = toughness'],
+  acrossL:'across layers ≈',ofXY:'of XY',selectOne:'Select a material to chart it.',
+  structure:'Structure',reinf:'Reinforcement',all:'All',of:'of',materials:'materials',
+  noMatch:'No material matches both filters. Set one back to All.',
+  spec:['Tensile, XY','Tensile, Z','Stiffness','Impact, notched','Elongation','Tg','Tm','HDT 0.45','Density','Transparency','Price'],
+  specN:['range','of XY',"Young's modulus",'Charpy XY','at break','glass transition','melting point','heat deflection','mass per part','street, ballpark'],
+  noTm:'none',amorphNoTm:'amorphous — softens, does not melt',flexNote:'flexural — not comparable',
+  noCrys:'no crystals to scatter light',crys:'crystals scatter light',
+  printReq:'Print requirements',
+  pr:['Nozzle','Bed','Cooling fan','Enclosure','Nozzle type','Drying','Difficulty','UV stable'],
+  encL:['Not needed','Helps','Required'],hardened:'Hardened',brass:'Brass ok',
+  coolingL:'Cooling',heatT:'Heat treatment',annealAt:'Anneal at',
+  noAnneal:'Not useful.',noAnnealA:'Amorphous polymers have no crystal phase to develop, so annealing relieves internal stress but will not raise heat resistance.',
+  noAnnealC:'This grade gains little from heat treatment.',
+  bonding:'Bonding',use:'Use:',watch:'Watch out:',
+  safety:'Safety',foodC:'Food contact',fumeR:'Fume risk',mainVoc:'Main emission',ventN:'Ventilation',
+  strengths:'Strengths',weaknesses:'Weaknesses',goodFor:'Good for',avoidL:'Avoid',
+  brandData:'Published brand data',conf:'confidence',
+  footT:'How to read this',
+  foot:['Values are manufacturer datasheet typicals normalised to <b>XY tensile strength (ISO 527)</b>, not design allowables. Bambu Lab\'s public guide publishes <b>bending</b> strength; those figures are converted at roughly 1.45× and shown separately with the original test method labelled.','Tg and Tm come from DSC data where a manufacturer publishes it, otherwise from polymer literature. A blank Tm means the polymer is amorphous and has no melting point — it softens progressively above Tg.','The Z-axis figure is a derate, not a measurement. Layer adhesion depends on chamber temperature, layer height, nozzle material and speed as much as on the polymer. Print a coupon before trusting a load path.','Emission and food-contact guidance is general safety information, not a regulatory clearance. Check the manufacturer\'s safety data sheet and your local rules before any food, skin or medical use.']},
+ ar:{dir:'rtl',lang:'English',
+  eyebrow:'اختيار خامات الطباعة ثلاثية الأبعاد',title:'دليل خامات الطباعة',
+  sub:'٣٣ خامة · التركيب والحرارة والخواص الميكانيكية · بروسا · بامبو لاب · بوليميكر · سيرايا تك',
+  rampL:'١٩٠ °م',rampM:'اللون = درجة حرارة البثق',rampR:'٤٥٠ °م',
+  tabs:['المرشد','التصنيف','المقارنة','البيانات'],
+  finderLede:'صِف القطعة وظروف تشغيلها. تُستبعد أولاً كل خامة لا تحتمل هذه الظروف، ثم تُرتَّب الخامات الباقية حسب قدرتها على تحمّل الحِمل المطلوب.',
+  q:['ما الذي تصنعه؟','داخلي أم خارجي؟','التعرّض للأشعة فوق البنفسجية','درجة حرارة التشغيل','التلامس الكيميائي','تلامس مع الطعام أو الجلد؟','كيف يُحمَّل الجزء؟','اتجاه الحِمل بالنسبة للطبقات','مقدار الحِمل','التهوية المتوفرة لديك'],
+  hintApp:'اختيار واحد يضبط بقية الحقول تلقائياً — عدِّل ما تشاء بعدها.',
+  hintLoads:'اختر ما ينطبق. اتركه فارغاً للحصول على ترتيب عام.',
+  hintOrient:'العامل الأهم على الإطلاق في بقاء القطعة المطبوعة سليمة.',
+  hintVent:'بعض الخامات تُطلق أبخرة ضارة وتُستبعد بدون شفط هواء.',
+  ranked:'النتائج مرتَّبة',survive:'خامة تجتاز شروطك',ruledOut:'خامات مستبعدة',
+  noVent:'لا توجد خامة تجتاز هذا. وهذه هي الإجابة الصحيحة لا نقص في البيانات — <b>كل خامات FDM تُطلق جسيمات فائقة الدقة، بما فيها PLA</b>. وجدت دراسات غرف الاختبار المنشورة أن التعرّض الشخصي تجاوز الحد الأمريكي لجسيمات PM2.5 في أكثر من ٦٣٪ من عمليات الطباعة. النافذة المفتوحة هي الحد الأدنى الواقعي، والحاضنة المزوّدة بفلتر أفضل. اختر أحدها بالأعلى لترى خياراتك.',
+  none:'لا توجد خامة تجتاز كل هذه الشروط. الحل المعتاد هو إمكانات الطابعة — الطابعة المغلقة تفتح لك ABS و ASA و PC والنايلون. أو خفِّف شرط الحرارة أو المواد الكيميائية.',
+  whyTC:'لماذا يختلف ترتيب الشد عن الضغط',
+  whyTCb:'القطعة المطبوعة أقوى بكثير تحت الضغط منها تحت الشد. الضغط يكبس الطبقات على بعضها، فلا يكاد ضعف الالتصاق بين الطبقات يؤثر، وتبلغ المقاومة الفعلية نحو <b>١٫٤ ضعف</b> قيمة الشد. أما الشد فيفصل الطبقات، فخامة مثل ASA التي تحتفظ بـ٣٥٪ فقط في المحور Z تفقد ثلثي قيمتها ما لم توجّه الحِمل في المستوى XY.',
+  splitT:'لماذا هذا التقسيم مهم',
+  splitB:'قدرة البوليمر على تكوين بلورات تحدد أربعة أمور دفعة واحدة: هل يمكن أن يكون <b>شفافاً</b>، وهل تفيد <b>المعالجة الحرارية</b>، وكم مقدار <b>الانكماش والالتواء</b>، ومدى صعوبة <b>إذابته أو لصقه</b>.',
+  amor:'غير متبلور',cryst:'شبه متبلور',blockc:'بوليمر كتلي',
+  amorSub:'له Tg فقط · بلا Tm',crystSub:'له Tg و Tm',
+  amorL:['السلاسل تبقى غير منتظمة — يلين تدريجياً فوق Tg بدل أن ينصهر فجأة','<b>يمكن أن يكون شفافاً</b>: لا توجد بلورات تشتّت الضوء','<b>المعالجة الحرارية لا ترفع مقاومة الحرارة</b> — تزيل الإجهاد الداخلي فقط','انكماش قليل ومتوقَّع — دقة أبعاد أسهل','يُلحَم بالمذيبات عادةً، ما يجعل اللصق سهلاً','مقاومة أضعف للمواد الكيميائية والكلل'],
+  crystL:['السلاسل تنتظم في مناطق مرتبة — نقطة انصهار حادة، ويتحمل الحِمل فوق Tg بكثير','<b>معتم أو ضبابي</b>: البلورات تشتّت الضوء','<b>المعالجة الحرارية ترفع مقاومة الحرارة بشكل كبير</b> — غالباً من ٦٠ إلى ١١٠ °م','التبلور يسبب انكماشاً، فيزيد الالتواء والتشوّه','مقاومة كيميائية ممتازة — ولهذا يصعب لصقه جداً','عمر أطول تحت الإجهاد المتكرر ومقاومة تآكل أفضل'],
+  fibT:'ألياف الكربون مقابل الألياف الزجاجية',
+  fibB:'كلاهما يزيد الصلابة وكلاهما يُتلف الفوهات النحاسية. الكربون يعطي صلابة أعلى لكل غرام و<b>يوصّل الكهرباء</b>؛ والزجاج يحتفظ بمقاومة صدم أعلى و<b>يعزل كهربائياً</b> ويقبل الألوان. وفي الأساس شبه المتبلور تعمل الألياف أيضاً كنواة للتبلور — لذلك تستجيب PA-CF و PET-CF بقوة للمعالجة الحرارية، بينما PETG-CF لا تستجيب إطلاقاً لأنها غير متبلورة.',
+  safeT:'الأبخرة والتلامس الغذائي — اقرأ هذا',
+  safeB:'<b>كل طابعة FDM تُطلق جسيمات فائقة الدقة، حتى مع PLA.</b> وجدت دراسة موحَّدة شملت ٤٤٧ تقييماً في غرف اختبار أن التعرّض الشخصي تجاوز الحد الأمريكي لجسيمات PM2.5 في أكثر من ٦٣٪ من عمليات الطباعة. الفرق بين الخامات في الجرعة لا في وجود الانبعاث. النايلون يُطلق أكبر كمية مركبات عضوية متطايرة بالكتلة (الكابرولاكتام، حتى نحو ١٨٠ ميكروغرام/دقيقة)، و ABS و HIPS يُطلقان الستايرين (المجموعة 2A لدى الوكالة الدولية لبحوث السرطان)، و<b>POM يُطلق الفورمالدهيد — المجموعة 1، مادة مسرطنة مؤكدة للإنسان</b> — إذا تجاوزت حرارته ٢٣٠ °م.<br><br>وبشكل منفصل: <b>كون الفتيلة آمنة غذائياً لا يجعل القطعة آمنة غذائياً.</b> خطوط الطبقات شقوق لا يمكن تعقيمها، و<b>الفوهات النحاسية القياسية تحتوي على الرصاص</b>، ومعظم الخامات تتشوه في غسالة الصحون. للتلامس الغذائي المتكرر استخدم فوهة من الفولاذ المقاوم للصدأ أو الفولاذ المقسّى، ثم اطلِ القطعة براتنج إيبوكسي آمن غذائياً — أو اطبع قالباً بدل القطعة نفسها.',
+  unfilled:'بدون ألياف',cf:'ألياف كربون',gf:'ألياف زجاجية',
+  cmpLede:'اختر حتى أربع خامات. الكتلة الباهتة هي المقاومة في المستوى XY، والكتلة المصمتة بداخلها هي المقاومة عبر الطبقات. هذه الفجوة هي موضع الانهيار الحقيقي للقطع المطبوعة.',
+  charts:['مقاومة الشد','معامل المرونة','المتانة','مقاومة الحرارة · HDT','التحول الزجاجي · Tg','الكثافة','السعر التقريبي','المقاومة مقابل الحرارة'],
+  chartsU:['ميجاباسكال · الباهت = XY، المصمت = عبر الطبقات','معامل يونغ، ميجاباسكال','معياري ٠–١٠','عند ٠٫٤٥ ميجاباسكال، °م','°م','غم/سم³ · الأقل أخف','دولار لكل كغم','حجم الدائرة = المتانة'],
+  acrossL:'عبر الطبقات ≈',ofXY:'من XY',selectOne:'اختر خامة لعرض الرسم البياني.',
+  structure:'التركيب',reinf:'التقوية',all:'الكل',of:'من',materials:'خامة',
+  noMatch:'لا توجد خامة تطابق المرشِّحين معاً. أعِد أحدهما إلى «الكل».',
+  spec:['الشد، XY','الشد، Z','معامل المرونة','مقاومة الصدم','الاستطالة','Tg','Tm','HDT ٠٫٤٥','الكثافة','الشفافية','السعر'],
+  specN:['المدى','من XY','معامل يونغ','شاربي XY','عند الكسر','التحول الزجاجي','درجة الانصهار','الانحراف الحراري','الكتلة لكل قطعة','سعر السوق تقريباً'],
+  noTm:'لا يوجد',amorphNoTm:'غير متبلور — يلين ولا ينصهر',flexNote:'انحنائي — غير قابل للمقارنة',
+  noCrys:'لا بلورات تشتّت الضوء',crys:'البلورات تشتّت الضوء',
+  printReq:'متطلبات الطباعة',
+  pr:['الفوهة','المنصة','مروحة التبريد','الحاضنة','نوع الفوهة','التجفيف','الصعوبة','ثبات UV'],
+  encL:['غير مطلوبة','تساعد','مطلوبة'],hardened:'مقسّاة',brass:'نحاسية تكفي',
+  coolingL:'التبريد',heatT:'المعالجة الحرارية',annealAt:'عالِج حرارياً عند',
+  noAnneal:'غير مفيدة.',noAnnealA:'البوليمرات غير المتبلورة لا تملك طوراً بلورياً ينمو، فالمعالجة الحرارية تزيل الإجهاد الداخلي لكنها لا ترفع مقاومة الحرارة.',
+  noAnnealC:'هذه الدرجة لا تستفيد كثيراً من المعالجة الحرارية.',
+  bonding:'اللصق',use:'استخدم:',watch:'انتبه:',
+  safety:'السلامة',foodC:'التلامس الغذائي',fumeR:'خطورة الأبخرة',mainVoc:'الانبعاث الرئيسي',ventN:'التهوية',
+  strengths:'المزايا',weaknesses:'العيوب',goodFor:'مناسب لـ',avoidL:'تجنّب',
+  brandData:'بيانات الشركات المنشورة',conf:'الثقة',
+  footT:'كيف تقرأ هذه البيانات',
+  foot:['القيم هي أرقام نموذجية من نشرات الشركات، مُوحَّدة على <b>مقاومة الشد في المستوى XY وفق ISO 527</b>، وليست قيم تصميم معتمدة. دليل بامبو لاب المنشور يعطي مقاومة <b>الانحناء</b>؛ حُوِّلت تلك الأرقام بمعامل ١٫٤٥ تقريباً وعُرضت منفصلة مع ذكر طريقة الاختبار الأصلية.','قيم Tg و Tm مأخوذة من بيانات DSC حيث تنشرها الشركة، وإلا فمن مراجع علم البوليمرات. خلو خانة Tm يعني أن البوليمر غير متبلور ولا نقطة انصهار له — بل يلين تدريجياً فوق Tg.','رقم المحور Z تقدير وليس قياساً. التصاق الطبقات يعتمد على حرارة الحاضنة وسماكة الطبقة ومادة الفوهة والسرعة بقدر اعتماده على البوليمر نفسه. اطبع عيّنة اختبار قبل الاعتماد على أي مسار حِمل.','إرشادات الانبعاثات والتلامس الغذائي معلومات سلامة عامة وليست اعتماداً تنظيمياً. راجع نشرة بيانات السلامة من الشركة واللوائح المحلية قبل أي استخدام غذائي أو جلدي أو طبي.']}
+};
+
+
+/* ===== Arabic for the remaining per-material fields =====
+   fn=cooling  fd=food  fm=fumes  vo=emission  g=glue  ga=glue warning  an=annealing
+========================================================= */
+const AR_X={
+petg:{fn:'التبريد الزائد يُضعف التصاق الطبقات، والقليل جداً يسبب الترهل. ابدأ بـ٤٠٪.',fd:'أفضل خيار للتلامس الغذائي هنا. كثير من درجاته تحمل اعتماد FDA 21 CFR 177.1315، ويقاوم الماء والأحماض الخفيفة، ويتحمل نحو ٧٠ °م.',fm:'انبعاثات منخفضة، لكنها ترتفع بوضوح فوق ٢٤٥ °م.',vo:'منخفض',g:'سيانوأكريليت أو إيبوكسي ثنائي المكوّن',ga:'لا يوجد لحام عملي بالمذيبات — PETG يقاوم معظمها'},
+pctg:{fn:'تبريد أقل قليلاً من PETG لحماية التصاق الطبقات.',fd:'نفس كيمياء الكوبوليستر في PETG؛ راجع اعتماد الدرجة تحديداً.',fm:'انبعاثات منخفضة.',vo:'منخفض',g:'سيانوأكريليت أو إيبوكسي',ga:'لا يوجد لحام عملي بالمذيبات'},
+abs:{fn:'المروحة عدوّه. أي تيار هواء يسبب انفصال الطبقات والتواءها — أبقِها قرب الصفر داخل حاضنة دافئة.',fd:'غير صالح للتلامس الغذائي. مونومر الستايرين المتبقي قد ينتقل، والتنعيم بالأسيتون يترك أثراً من المذيب.',fm:'يُطلق الستايرين بنحو ١٠–١١٠ ميكروغرام/دقيقة — المجموعة 2A لدى الوكالة الدولية لبحوث السرطان، أي مسرطن محتمل للإنسان. من أعلى عائلتين انبعاثاً. الحد الأدنى حاضنة بفلتر كربوني و HEPA؛ لا تشغّله أبداً في غرفة نوم أو غرفة غير مهوّاة.',vo:'ستايرين',g:'معجون الأسيتون أو صمغ ABS — لحام حقيقي بالمذيب بقوة الخامة الأصلية',ga:'—'},
+asa:{fn:'تبريد شبه معدوم. حتى حاضنة فاترة عند ٣٠ °م ترفع التصاق الطبقات بنحو ٢٠٪.',fd:'غير صالح للتلامس الغذائي.',fm:'قيس كأعلى مصدر للمركبات العضوية المتطايرة بين الخامات الشائعة. ستايرين مع أكريلونيتريل. اعتبر الحاضنة المزوّدة بفلترة فعّالة إلزامية لا اختيارية.',vo:'ستايرين + أكريلونيتريل',g:'أسيتون أو صمغ ABS/ASA — يلتحم بنظافة',ga:'—'},
+pc:{fn:'تبريد أدنى. يحتاج PC حاضنة ساخنة للالتحام؛ تبريده السريع يسبب انفصال الطبقات.',fd:'تجنّبه. كثير من درجات PC تحتوي بيسفينول A الذي ينتقل بسهولة أكبر إلى الأطعمة الساخنة أو الدهنية. توجد كوبوليسترات خالية منه لكنها ليست ما يُباع كفتيلة PC غالباً.',fm:'يُطبع عند ٢٧٠–٣٠٠ °م، والانبعاثات ترتفع بحدة مع الحرارة. هوِّ وفلتر.',vo:'بيسفينول A (بعض الدرجات) ومركبات قليلة التبلمر',g:'لحام بمذيب ثنائي كلورو الميثان، أو سيانوأكريليت',ga:'لا تستخدم الكحول الأيزوبروبيلي أو الأسيتون أبداً — يسببان تشقق الإجهاد في PC المحمَّل'},
+pmma:{fn:'تبريد خفيف. الزائد يسبب التشقق؛ PMMA حساس للشقوق أثناء التبريد.',fd:'بعض درجات الأكريليك معتمدة غذائياً، لكن خطوط الطبقات تجعل التنظيف غير عملي وهو هشّ في الخدمة.',fm:'مونومر ميثيل ميثاكريلات المتبقي مهيّج للجهاز التنفسي والعينين وله رائحة نفّاذة.',vo:'مونومر MMA',g:'صمغ الأكريليك أو ثنائي كلورو الميثان — أفضل لحام بالمذيبات بين كل الفتائل',ga:'—'},
+pvb:{fn:'برِّد كما تبرّد PLA. يُطبع PVB بسهولة ويستفيد من التبريد الكامل.',fd:'تجنّبه. يلين ويتعكر مع الرطوبة، فلن يتحمل الغسيل.',fm:'الطباعة نفسها معتدلة. أما خطوة التنعيم بالكحول الأيزوبروبيلي فتحتاج تهوية حقيقية وخلوّ المكان من أي مصدر اشتعال.',vo:'بوتيرال، إضافة إلى الكحول الأيزوبروبيلي أثناء التنعيم',g:'كحول أيزوبروبيلي — يلحم PVB ويُنعّمه بالبخار معاً',ga:'—'},
+hips:{fn:'تبريد منخفض، شبيه بـ ABS.',fd:'غير صالح للتلامس الغذائي.',fm:'يُطلق ستايرين بمستويات تقارب ABS. والليمونين المستخدم لإذابته مهيّج أيضاً — استخدمه في مكان مهوّى.',vo:'ستايرين',g:'ليمونين أو صمغ ستايرين أساسه الأسيتون',ga:'—'},
+pei:{fn:'بلا مروحة إطلاقاً. يحتاج PEI حاضنة فوق ١٣٠ °م وأي تبريد يسبب انفصال الطبقات فوراً.',fd:'بعض درجات ULTEM معتمدة غذائياً بل وطبياً، لكن التشغيل عند ٤٠٠ °م يضعه خارج متناول معظم الناس.',fm:'يحتاج ٣٨٠–٤٠٠ °م. الشفط الفعّال ضروري — هذا مجال الأجهزة الصناعية.',vo:'نواتج التحلل الحراري',g:'إيبوكسي عالي الحرارة بعد الكشط؛ ويمكن لحامه بثنائي كلورو الميثان',ga:'معظم اللواصق الشائعة تفشل عند حرارة تشغيل PEI'},
+petgcf:{fn:'تبريد أقل من PETG العادي — الألياف تزيد قوام المصهور وتقلل الترهل أصلاً.',fd:'غير صالح للتلامس الغذائي. أطراف الألياف المكشوفة على السطح لا يمكن تنظيفها وقد تتساقط.',fm:'الصنفرة أو التشغيل الآلي يطلق غبار ألياف الكربون — البس كمامة ولا تصنفر جافاً.',vo:'جسيمات ألياف',g:'إيبوكسي بعد كشط السطح',ga:'الألياف السطحية تقلل مساحة الالتصاق — السيانوأكريليت وحده ضعيف'},
+asacf:{fn:'بلا تبريد عملياً.',fd:'غير صالح للتلامس الغذائي.',fm:'كما ASA، مع غبار ألياف عند الصنفرة.',vo:'ستايرين + أكريلونيتريل + ألياف',g:'صمغ الأسيتون ما زال يعمل، مع إيبوكسي للوصلات الإنشائية',ga:'—'},
+absgf:{fn:'بلا تبريد عملياً.',fd:'غير صالح للتلامس الغذائي.',fm:'ستايرين كما ABS، مع غبار ألياف زجاجية عند الصنفرة.',vo:'ستايرين + ألياف',g:'صمغ الأسيتون أو إيبوكسي',ga:'—'},
+pccf:{fn:'بلا تبريد؛ الحاضنة الساخنة ضرورية.',fd:'غير صالح للتلامس الغذائي.',fm:'كما PC، مع غبار ألياف.',vo:'بيسفينول A + ألياف',g:'إيبوكسي بعد الكشط؛ وثنائي كلورو الميثان ما زال يعمل على الطور البوليمري',ga:'لا تستخدم الكحول الأيزوبروبيلي أو الأسيتون أبداً'},
+pla:{fn:'تبريد كامل. يتبلور PLA ببطء شديد حتى إن التبريد السريع لا يكلّفك شيئاً ويمنحك تفاصيل حادة.',fd:'البوليمر الأساسي معتمد للتلامس الغذائي ومن أأمن ما هنا، لكن الملوّنات تختلف بين الشركات وهو يلين قرب ٥٥ °م فلا يُغسل بماء ساخن ولا في غسالة الصحون.',fm:'أقل إطلاق للمركبات العضوية المتطايرة بين الفتائل الشائعة. ومع ذلك يُطلق جسيمات فائقة الدقة كأي خامة FDM.',vo:'لاكتيد',g:'السيانوأكريليت ممتاز؛ ويُلحَم بثنائي كلورو الميثان أو خلات الإيثيل',ga:'—',an:{temp:'٨٠–١١٠ °م، ٣٠–٦٠ دقيقة',gain:'قد ترتفع مقاومة الحرارة فوق ١٠٠ °م، لكن توقّع انكماشاً ١–٣٪ وتحوّل القطعة إلى أبيض معتم'}},
+plaplus:{fn:'تبريد كامل، كما PLA.',fd:'المعدّلات نادراً ما تكون معتمدة غذائياً حتى لو كان أساس PLA كذلك. اعتبره غير غذائي ما لم تصرّح الشركة بخلاف ذلك.',fm:'مشابه لـ PLA العادي.',vo:'لاكتيد + معدّلات الصدم',g:'سيانوأكريليت؛ وإيبوكسي للوصلات الإنشائية',ga:'—',an:{temp:'٨٠–١٠٠ °م، ٣٠–٦٠ دقيقة',gain:'مكسب متواضع في مقاومة الحرارة؛ معدّلات الصدم تحدّ من مقدار التبلور'}},
+htpla:{fn:'برِّد بحرية أثناء الطباعة — مقاومة الحرارة تأتي من الفرن لاحقاً لا من الحاضنة.',fd:'المضافات المحفِّزة للتبلور غير معتمدة غذائياً عادةً. لكن المعالجة الحرارية ترفع درجة حرارة الغسل كثيراً.',fm:'مشابه لـ PLA العادي.',vo:'لاكتيد',g:'سيانوأكريليت أو إيبوكسي',ga:'اللحام بالمذيبات أقل فاعلية بعد المعالجة الحرارية',an:{temp:'١٠٠–١٢٠ °م، ٣٠–٦٠ دقيقة',gain:'مقاومة الحرارة تقفز من نحو ٦١ °م إلى ١٠٧ °م. هذا هو الهدف كله من الخامة'}},
+copa:{fn:'تبريد منخفض. يحتاج النايلون تبريداً بطيئاً ليتبلور ويلتحم؛ التبريد السريع يعطي طبقات ضعيفة وعكرة.',fd:'بعض درجات النايلون معتمدة غذائياً، لكنه يمتص الماء وخطوط الطبقات الرطبة الناتجة يصعب إبقاؤها صحية.',fm:'الكابرولاكتام أكبر انبعاث مفرد للمركبات العضوية قيس من أي فتيلة، حتى نحو ١٨٠ ميكروغرام/دقيقة — أكثر بالكتلة من ستايرين ABS. يهيّج العينين والمجاري التنفسية. والنايلون أيضاً مصدر عالٍ للجسيمات. هوِّ جيداً.',vo:'كابرولاكتام',g:'يصعب لصقه جداً. اكشط السطح ثم استخدم إيبوكسي ثنائي أو سيانوأكريليت مع بادئ بولي أوليفين',ga:'السيانوأكريليت وحده على سطح غير معالَج ينزع فوراً',an:{temp:'٨٠–١٢٠ °م، ٤–٦ ساعات',gain:'يرفع نسبة التبلور ومقاومة الحرارة ويحسّن ثبات الأبعاد. معظم أرقام نشرات النايلون مقيسة بعد المعالجة'}},
+pp:{fn:'تبريد متوسط. ينكمش PP كثيراً عند التبلور، فحرارة الحاضنة أهم من رقم المروحة.',fd:'ممتاز. البولي بروبيلين هو البوليمر القياسي لحاويات الطعام، يقاوم الماء المغلي، وآمن في غسالة الصحون، وخامل بلا ملوّنات.',fm:'من أقل الفتائل انبعاثاً على الإطلاق.',vo:'منخفض جداً',g:'يكاد يستحيل لصقه. يحتاج بادئ بولي أوليفين مع سيانوأكريليت، أو لحاماً حرارياً',ga:'الإيبوكسي والسيانوأكريليت العادي لا يلتصقان — طاقة سطح PP منخفضة جداً'},
+pom:{fn:'تبريد منخفض ومنصة ساخنة. يتبلور POM بسرعة وينكمش بقوة أثناء ذلك.',fd:'بعض درجات الأسيتال معتمدة غذائياً لأدوات المائدة، لكن خطر الفورمالدهيد يجعله خياراً سيئاً للطباعة المنزلية.',fm:'أخطر حالة في قاعدة البيانات. POM هو فورمالدهيد مبلمَر ويتفكك عائداً إليه فوق نحو ٢٣٠ °م. والفورمالدهيد مصنّف في المجموعة 1 — مادة مسرطنة مؤكدة للإنسان. لا تتجاوز ٢٣٠ °م أبداً، ولا تترك الخامة ساخنة في الفوهة، واستخدم شفطاً فعّالاً. إذا شممت رائحة نفّاذة حادة فأوقف الطباعة وهوِّ الغرفة.',vo:'فورمالدهيد',g:'لا يُلصق عملياً بدون تخشين كيميائي أو معالجة بلازما',ga:'صمّم مثبتات ميكانيكية بدلاً من ذلك — وهو الحل الصناعي المعتاد',an:{temp:'١٤٠–١٦٠ °م، ١–٢ ساعة',gain:'يزيل الإجهادات الداخلية الكبيرة الناتجة عن التبلور السريع ويثبّت الأبعاد'}},
+tpu:{fn:'تبريد سخي يساعد على منع ترهل المصهور اللين.',fd:'بعض درجات TPU معتمدة غذائياً لموانع التسرب، لكن راجع الدرجة تحديداً.',fm:'منخفض عند الحرارات العادية. لا تفرط في التسخين — نواتج التحلل مهيّجة.',vo:'منخفض، مع آثار أيزوسيانات عند الحرارة العالية',g:'سيانوأكريليت مرن أو لاصق بولي يوريثاني (صمغ الأحذية)',ga:'الإيبوكسي الصلب يتشقق وينفصل بمجرد انثناء القطعة'},
+peek:{fn:'بلا مروحة إطلاقاً. يجب أن تبقى الحاضنة فوق ١٣٣ °م ليتبلور الجزء في موضعه — و PEEK المطبوع بارداً ضعيف وعكر.',fd:'PEEK معتمد غذائياً بل وبدرجة الزرعات، ويتحمل التعقيم بالبخار، وهذا نادر هنا. تبقى خطوط الطبقات هي القيد لا البوليمر.',fm:'التشغيل عند ٤٠٠–٤٥٠ °م يستلزم شفطاً فعّالاً.',vo:'نواتج التحلل الحراري',g:'لا يوجد مذيب يذيبه. اكشط ثم عالج بالبلازما أو اللهب، ثم استخدم إيبوكسي عالي الحرارة',ga:'التثبيت الميكانيكي هو الحل الصناعي المعتمد',an:{temp:'٢٠٠–٣٠٠ °م، عدة ساعات',gain:'يرفع نسبة التبلور من ١٥–٣٥٪ بعد الطباعة إلى ٣٥–٤٥٪. يحسّن المقاومة والصلابة والزحف والمقاومة الكيميائية — لكن القطع المتبلورة على البارد تتشوه كثيراً'}},
+placf:{fn:'برِّد بحرية — الألياف تقلل الخيوط والترهل أصلاً.',fd:'غير صالح للتلامس الغذائي.',fm:'غبار ألياف الكربون عند الصنفرة — البس كمامة.',vo:'لاكتيد + جسيمات ألياف',g:'إيبوكسي بعد الكشط',ga:'الألياف السطحية تُضعف روابط السيانوأكريليت',an:{temp:'٨٠–١٠٠ °م، ٣٠–٦٠ دقيقة',gain:'الألياف تحفّز التبلور فيعالَج PLA-CF أسرع من PLA العادي — لكن مكسب مقاومة الحرارة يبقى متواضعاً'}},
+htplagf:{fn:'برِّد بحرية أثناء الطباعة؛ مقاومة الحرارة تأتي من المعالجة.',fd:'غير صالح للتلامس الغذائي.',fm:'غبار ألياف زجاجية عند الصنفرة — البس كمامة.',vo:'لاكتيد + جسيمات ألياف',g:'سيانوأكريليت أو إيبوكسي',ga:'—',an:{temp:'١٠٠–١٢٠ °م، ٣٠–٦٠ دقيقة',gain:'مقاومة الحرارة ترتفع من نحو ٧٥ °م إلى ١١٥ °م، والألياف الزجاجية تحدّ من الانكماش المصاحب للمعالجة'}},
+petcf:{fn:'تبريد منخفض. التبريد البطيء يتيح لـ PET أن يتبلور، ومن هناك تأتي مقاومة الحرارة.',fd:'غير صالح للتلامس الغذائي، رغم أن أساس PET نفسه هو بوليمر قوارير المشروبات.',fm:'متوسط. غبار ألياف عند الصنفرة.',vo:'جسيمات ألياف',g:'إيبوكسي بعد الكشط',ga:'السيانوأكريليت ضعيف على سطح غني بالألياف',an:{temp:'٩٠–١٣٠ °م، ٦–١٢ ساعة',gain:'ضرورية. مقاومة الحرارة ترتفع من متوسطة إلى ١٥٠–٢٠٥ °م بعد التبلور. و PET-CF غير المعالَج خامة مختلفة تماماً'}},
+pa6cf:{fn:'تبريد منخفض في حاضنة ساخنة. يحتاج النايلون الحرارة ليلحم الطبقات عبر الألياف.',fd:'غير صالح للتلامس الغذائي.',fm:'كما النايلون، مع غبار ألياف كربون عند الصنفرة.',vo:'كابرولاكتام + ألياف',g:'اكشط ثم إيبوكسي أو سيانوأكريليت مع بادئ بولي أوليفين',ga:'الأسطح غير المعالَجة تلتصق بضعف',an:{temp:'٩٠–١٣٠ °م، ٦–١٢ ساعة',gain:'معظم أرقام PA6-CF المنشورة قيم بعد المعالجة. ترفع مقاومة الحرارة بحدة وتثبّت الأبعاد'}},
+pa6gf:{fn:'تبريد منخفض في حاضنة ساخنة.',fd:'غير صالح للتلامس الغذائي.',fm:'كما النايلون، مع غبار ألياف زجاجية.',vo:'كابرولاكتام + ألياف',g:'اكشط ثم إيبوكسي',ga:'الأسطح غير المعالَجة تلتصق بضعف',an:{temp:'٩٠–١٣٠ °م، ٦–١٢ ساعة',gain:'كما PA6-CF — الأرقام المنشورة قيم بعد المعالجة'}},
+pahtcf:{fn:'تبريد منخفض؛ حاضنة ساخنة.',fd:'غير صالح للتلامس الغذائي.',fm:'كابرولاكتام أقل من PA6 لكنه ما زال يحتاج فلترة.',vo:'متطايرات أميدية + ألياف',g:'اكشط ثم إيبوكسي',ga:'الأسطح غير المعالَجة تلتصق بضعف',an:{temp:'٩٠–١٣٠ °م، ٦–١٢ ساعة',gain:'يحسّن مقاومة الحرارة وثبات الأبعاد؛ القيم المنشورة بعد المعالجة'}},
+ppa:{fn:'تبريد أدنى وحاضنة ساخنة — الهيكل شبه العطري يحتاج الحرارة ليلتحم جيداً.',fd:'تجنّبه ما لم تصرّح الشركة بذلك تحديداً.',fm:'حرارة التشغيل العالية ترفع الانبعاثات. حاضنة مع فلترة.',vo:'متطايرات أميدية',g:'اكشط ثم إيبوكسي؛ المعالجة السطحية منصوح بها بقوة',ga:'اللحام بالمذيبات غير عملي',an:{temp:'١٢٠–١٦٠ °م، عدة ساعات',gain:'توصي الشركات صراحةً بالمعالجة الحرارية للمقاومة ومقاومة الحرارة وثبات الأبعاد'}},
+ppagf:{fn:'تبريد أدنى؛ الحاضنة الساخنة ضرورية.',fd:'غير صالح للتلامس الغذائي.',fm:'كما PPA، مع غبار ألياف زجاجية.',vo:'متطايرات أميدية + ألياف',g:'اكشط ثم إيبوكسي',ga:'لا لحام بالمذيبات',an:{temp:'١٢٠–١٦٠ °م، عدة ساعات',gain:'يحسّن المقاومة وثبات الأبعاد'}},
+ppacf:{fn:'تبريد أدنى وحاضنة ساخنة.',fd:'غير صالح للتلامس الغذائي.',fm:'كما PPA، مع غبار ألياف كربون.',vo:'متطايرات أميدية + ألياف',g:'اكشط ثم إيبوكسي؛ المعالجة السطحية منصوح بها بقوة',ga:'اللحام بالمذيبات غير عملي',an:{temp:'١٢٠–١٦٠ °م، عدة ساعات',gain:'توصي الشركات صراحةً بالمعالجة الحرارية للمقاومة ومقاومة الحرارة وثبات الأبعاد'}},
+ppacfcore:{fn:'تبريد أدنى؛ الحاضنة الساخنة ضرورية.',fd:'غير صالح للتلامس الغذائي.',fm:'الغلاف الخارجي الخالي من الألياف يعني تعرّض ألياف أقل على السطح، ما يقلل الغبار قليلاً عند المناولة والصنفرة.',vo:'متطايرات أميدية + ألياف',g:'اكشط ثم إيبوكسي — الغلاف الخالي من الألياف يلتصق أفضل من سطح كربوني عادي',ga:'لا لحام بالمذيبات',an:{temp:'٨٠–١٠٠ °م، ٤–٨ ساعات',gain:'يرفع المقاومة وثبات الأبعاد أكثر'}},
+ppscf:{fn:'بلا مروحة. يجب أن يتبلور PPS في حاضنة ساخنة؛ تبريده سريعاً يتركه غير متبلور وهشّاً.',fd:'غير صالح للتلامس الغذائي.',fm:'متطايرات كبريتية عند ٣٢٠ °م فأكثر، برائحة كريهة مميزة. الشفط الفعّال مطلوب.',vo:'مركبات كبريتية + ألياف',g:'لا شيء يذيبه تحت ٢٠٠ °م. اكشط وعالج بالبلازما ثم إيبوكسي عالي الحرارة',ga:'صمّم للتثبيت الميكانيكي',an:{temp:'١٥٠–٢٠٠ °م، عدة ساعات',gain:'يُكمل التبلور. تصل مقاومة الحرارة إلى نحو ٢٥٠ °م عند اكتمال التبلور'}},
+ppsgf:{fn:'بلا مروحة؛ الحاضنة الساخنة ضرورية.',fd:'غير صالح للتلامس الغذائي.',fm:'كما PPS-CF، مع غبار ألياف زجاجية.',vo:'مركبات كبريتية + ألياف',g:'اكشط وعالج بالبلازما ثم إيبوكسي عالي الحرارة',ga:'لا لحام بالمذيبات',an:{temp:'١٥٠–٢٠٠ °م، عدة ساعات',gain:'يُكمل التبلور ويثبّت مقاومة الحرارة'}}
+};
+
+/* test-method citations */
+const AR_BM={
+"ISO 527":"ISO 527","ISO 178 — flexural":"ISO 178 — انحنائي",
+"ISO 178 — flexural, annealed":"ISO 178 — انحنائي، بعد المعالجة",
+"ISO 527 / ISO 179":"ISO 527 / ISO 179","ISO 527 / ISO 75":"ISO 527 / ISO 75",
+"ISO 527, annealed":"ISO 527، بعد المعالجة","ISO 527, recycled CF":"ISO 527، ألياف كربون معاد تدويرها",
+"ISO 527 — 'Tc N/A' confirms amorphous":"ISO 527 — غياب Tc يؤكد أنه غير متبلور",
+"ISO 527 — no Tm confirms amorphous":"ISO 527 — غياب Tm يؤكد أنه غير متبلور",
+"DSC — Tc present confirms crystallisable":"DSC — وجود Tc يؤكد قابليته للتبلور",
+"batch-traceable QC":"ضبط جودة قابل للتتبع بالدفعة","in-house testing":"اختبار داخلي",
+"in-house, batch-traceable":"داخلي، قابل للتتبع بالدفعة","independent tensile testing":"اختبار شد مستقل",
+"industrial TDS":"نشرة بيانات صناعية","literature + industrial TDS":"مراجع علمية + نشرة صناعية",
+"manufacturer comparative claim":"ادعاء مقارن من الشركة","manufacturer data":"بيانات الشركة",
+"supplier TDS + DSC literature":"نشرة المورّد + مراجع DSC",
+"supplier TDS, dry-state values":"نشرة المورّد، قيم في الحالة الجافة",
+"supplier TDS — 0.4 mm+ hardened nozzle, enclosure required":"نشرة المورّد — فوهة مقسّاة ٠٫٤ مم فأكثر، والحاضنة مطلوبة",
+"supplier data":"بيانات المورّد","supplier product data":"بيانات منتج المورّد",
+"typical supplier TDS":"نشرة مورّد نموذجية","toughened grade":"درجة معزَّزة المتانة",
+"highest-HDT ABS listed":"أعلى ABS في مقاومة الحرارة","unnotched impact":"صدم بدون حزّ",
+"supplier claim — no published ISO 527 Z value":"ادعاء المورّد — لا قيمة Z منشورة وفق ISO 527",
+"supplier data — HDT published, tensile inferred":"بيانات المورّد — مقاومة الحرارة منشورة والشد مستنتج"
+};
+const AR_BV={"±0.02 mm tolerance · high Z-strength in category":"تفاوت ±٠٫٠٢ مم · من الأعلى في مقاومة المحور Z ضمن فئته","glass-filled ABS · higher stiffness, colours available":"ABS معبأ بالزجاج · صلابة أعلى، ومتوفر بألوان","glass-fibre ABS · HT grade rated to 101 °C":"ABS بألياف زجاجية · الدرجة HT مصنّفة حتى ١٠١ °م","softer 85A grade, plus a foaming TPU for low density and vibration damping":"درجة ٨٥A الأطرى، مع TPU رغوي لكثافة منخفضة وتخميد اهتزاز","stated 48% stronger and 102% stiffer than PA6-CF · 227 °C service":"تصرّح الشركة بأنه أقوى بـ٤٨٪ وأصلب بـ١٠٢٪ من PA6-CF · تشغيل ٢٢٧ °م","15% carbon fibre · HDT to 230 °C · anneal 80–100 °C for 4–8 h":"١٥٪ ألياف كربون · مقاومة حرارة حتى ٢٣٠ °م · معالجة ٨٠–١٠٠ °م لمدة ٤–٨ ساعات","70 MPa tensile (dry) · 114 MPa flexural · 1.2 g/cm³ · 2.50% saturated water":"٧٠ ميجاباسكال شد (جاف) · ١١٤ انحناء · ١٫٢ غم/سم³ · ٢٫٥٠٪ تشبّع مائي","185 °C HDT · 15% glass fibre · ultra-low moisture absorption":"مقاومة حرارة ١٨٥ °م · ١٥٪ ألياف زجاجية · امتصاص رطوبة منخفض جداً","25% CF core · unfilled PPA shell · HDT to 230 °C · claims improved Z-axis bonding":"قلب بـ٢٥٪ ألياف كربون · غلاف PPA بلا ألياف · مقاومة حرارة حتى ٢٣٠ °م · تدّعي الشركة تحسّن الترابط في المحور Z","0.05% moisture absorption · insoluble below 200 °C · ~320 °C nozzle":"٠٫٠٥٪ امتصاص رطوبة · لا يذوب تحت ٢٠٠ °م · فوهة نحو ٣٢٠ °م"};
+const bv=v=>(L==='ar'&&AR_BV[v])?AR_BV[v]:v;
+const bm=v=>(L==='ar'&&AR_BM[v])?AR_BM[v]:v;
+const xf=(m,k,fb)=>(L==='ar'&&AR_X[m.id]&&AR_X[m.id][k])?AR_X[m.id][k]:fb;
+
+const AR_OPT={
+ auto_int:'سيارات — داخلي',auto_ext:'سيارات — خارجي',auto_hood:'سيارات — حجرة المحرك',
+ drone:'درون / طائرة لاسلكية',housing:'صندوق / غلاف',gears:'تروس / محامل',
+ jig:'قوالب وتجهيزات',marine:'بحري / مغمور',elec:'كهربائي / إلكترونيات',
+ fluid:'سباكة / سوائل',outdoor:'تجهيزات خارجية',display:'عرض / جمالي',
+ in:'داخلي',out:'خارجي',none:'لا شيء',occ:'ضوء متقطع',sun:'شمس مباشرة',
+ 50:'حتى ٥٠ °م',80:'٥٠–٨٠ °م',120:'٨٠–١٢٠ °م',150:'١٢٠–١٥٠ °م',200:'١٥٠–٢٠٠ °م',240:'أكثر من ٢٠٠ °م',
+ water:'ماء / رطوبة',oil:'زيوت / وقود',solvent:'مذيبات',acid:'أحماض / قلويات',
+ nofood:'لا تلامس',food:'تلامس غذائي',skin:'تلامس جلدي مطوّل',
+ tension:'شد',compression:'ضغط',bending:'انحناء',impact:'صدم',cyclic:'اهتزاز متكرر',
+ sustained:'حِمل دائم',wear:'احتكاك وتآكل',flex:'انثناء / إحكام',
+ light:'خفيف',mod:'متوسط',heavy:'ثقيل',
+ xy:'مع الطبقات (XY)',z:'عبر الطبقات (Z)',un:'غير متأكد',
+ basic:'مفتوحة، فوهة نحاسية',hard:'مفتوحة، فوهة مقسّاة',enc:'مغلقة، ٣٠٠ °م',ind:'حاضنة مسخّنة، ٤٥٠ °م',
+ 0:'هواء الغرفة فقط',1:'نافذة مفتوحة',2:'حاضنة مع فلتر',3:'شفط هواء فعّال',
+ All:'الكل',Amorphous:'غير متبلور','Semi-crystalline':'شبه متبلور',Block:'كتلي',
+ None:'بدون ألياف',CF:'كربون',GF:'زجاج',
+ Clear:'شفاف','Clear-capable':'قابل للشفافية',Translucent:'شبه شفاف',Opaque:'معتم',
+ Optional:'اختياري',Recommended:'مستحسن',Required:'مطلوب',
+ high:'عالية',medium:'متوسطة',low:'منخفضة'
+};
+const arOpt=v=>(L==='ar'&&AR_OPT[v])?AR_OPT[v]:v;
+
+/* ================= colour system: temperature drives everything ================= */
+const STOPS=[[235,'#3D93D6'],[262,'#35C6A5'],[300,'#F2A63C'],[9999,'#F2603C']];
+const tc=t=>STOPS.find(s=>t<=s[0])[1];
+const SC={'Amorphous':'#8A9BF0','Semi-crystalline':'#F0894A','Block':'#B78AE8'};
+const FC={'None':'#8795A8','CF':'#E7EBF1','GF':'#35C6A5'};
+
+/* axis maxima are derived from the data, never hardcoded, so adding a
+   material can't silently push a bar past 100% */
+const MAX={
+  tensile:Math.max(...M.map(m=>m.tensile))*1.06,
+  modulus:Math.max(...M.map(m=>m.modulus))*1.04,
+  hdt:Math.max(...M.map(m=>m.hdt))*1.04,
+  tg:Math.max(...M.map(m=>m.tg))*1.06,
+  density:Math.max(...M.map(m=>m.density))*1.04,
+  cost:Math.max(...M.map(m=>(m.cost[0]+m.cost[1])/2))*1.04,
+  tough:10
+};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=(v,lo,hi)=>Math.max(0,Math.min(1,(v-lo)/(hi-lo)));
+
+/* ================= finder model ================= */
+const APPS=[
+ {id:'auto_int',label:'Automotive — interior',pre:{place:'in',uv:'occ',temp:80,chem:'none',loads:['bending','impact'],level:'mod'}},
+ {id:'auto_ext',label:'Automotive — exterior',pre:{place:'out',uv:'sun',temp:80,chem:'none',loads:['impact','cyclic'],level:'mod'}},
+ {id:'auto_hood',label:'Automotive — under hood',pre:{place:'in',uv:'none',temp:150,chem:'oil',loads:['sustained','bending'],level:'heavy'}},
+ {id:'drone',label:'Drone / RC frame',pre:{place:'out',uv:'occ',temp:50,chem:'none',loads:['impact','bending'],level:'mod'}},
+ {id:'housing',label:'Enclosure / housing',pre:{place:'in',uv:'none',temp:50,chem:'none',loads:['impact'],level:'light'}},
+ {id:'gears',label:'Gears / bearings',pre:{place:'in',uv:'none',temp:50,chem:'none',loads:['wear','cyclic'],level:'mod'}},
+ {id:'jig',label:'Jig / fixture / tooling',pre:{place:'in',uv:'none',temp:120,chem:'none',loads:['compression'],level:'mod'}},
+ {id:'marine',label:'Marine / submerged',pre:{place:'out',uv:'sun',temp:50,chem:'water',loads:['cyclic'],level:'mod'}},
+ {id:'elec',label:'Electrical / electronics',insulate:true,pre:{place:'in',uv:'none',temp:120,chem:'none',loads:['compression'],level:'light'}},
+ {id:'fluid',label:'Plumbing / fluid',pre:{place:'in',uv:'none',temp:80,chem:'water',loads:['sustained'],level:'mod'}},
+ {id:'outdoor',label:'Outdoor hardware',pre:{place:'out',uv:'sun',temp:80,chem:'water',loads:['bending','sustained'],level:'mod'}},
+ {id:'display',label:'Display / cosmetic',pre:{place:'in',uv:'none',temp:50,chem:'none',loads:[],level:'light'}}
+];
+const PLACES=[{id:'in',label:'Indoor'},{id:'out',label:'Outdoor'}];
+const UVS=[{id:'none',label:'None'},{id:'occ',label:'Occasional light'},{id:'sun',label:'Constant sun'}];
+const TEMPS=[{id:50,label:'Up to 50 °C'},{id:80,label:'50–80 °C'},{id:120,label:'80–120 °C'},{id:150,label:'120–150 °C'},{id:200,label:'150–200 °C'},{id:240,label:'Over 200 °C'}];
+const CHEMS=[{id:'none',label:'None',k:null},{id:'water',label:'Water / humidity',k:'cw'},{id:'oil',label:'Oils / fuels',k:'co'},{id:'solvent',label:'Solvents',k:'cs'},{id:'acid',label:'Acids / bases',k:'ca'}];
+const LOADS=[{id:'tension',label:'Tension'},{id:'compression',label:'Compression'},{id:'bending',label:'Bending'},{id:'impact',label:'Impact'},{id:'cyclic',label:'Cyclic / vibration'},{id:'sustained',label:'Constant load'},{id:'wear',label:'Sliding wear'},{id:'flex',label:'Flexing / sealing'}];
+const LEVELS=[{id:'light',label:'Light'},{id:'mod',label:'Moderate'},{id:'heavy',label:'Heavy'}];
+const ORIENTS=[{id:'xy',label:'Along layers (XY)'},{id:'z',label:'Across layers (Z)'},{id:'un',label:'Not sure'}];
+const CONTACTS=[{id:'nofood',label:'No contact'},{id:'food',label:'Food contact'},{id:'skin',label:'Prolonged skin contact'}];
+const VENTS=[{id:0,label:'Room air only'},{id:1,label:'Open window'},{id:2,label:'Enclosure + filter'},{id:3,label:'Active extraction'}];
+const RIGS=[
+ {id:'basic',label:'Open frame, brass',enc:0,hard:false,hot:250},
+ {id:'hard',label:'Open frame, hardened',enc:0,hard:true,hot:265},
+ {id:'enc',label:'Enclosed, 300 °C',enc:2,hard:true,hot:300},
+ {id:'ind',label:'Heated chamber, 450 °C',enc:2,hard:true,hot:450}];
+const LW={light:{l:.55,e:.3,c:.15},mod:{l:.75,e:.15,c:.1},heavy:{l:.92,e:.05,c:.03}};
+const RIGID=['tension','compression','bending','sustained','wear'];
+
+function findMaterials(s){
+  const A=APPS.find(a=>a.id===s.app), R=RIGS.find(r=>r.id===s.rig), C=CHEMS.find(c=>c.id===s.chem);
+  const of=s.orient==='xy'?1:s.orient==='z'?0:.5, W=LW[s.level], T=s.temp, L=s.loads;
+  return M.map(m=>{
+    const blocks=[],warns=[],why=[];
+    if(m.enc>R.enc) blocks.push(isAr()?'يحتاج حاضنة مغلقة':'needs an enclosure');
+    if(m.hard&&!R.hard) blocks.push(isAr()?'يحتاج فوهة مقسّاة':'needs a hardened nozzle');
+    if(m.minHotend>R.hot) blocks.push(isAr()?'يحتاج فوهة '+m.minHotend+' °م':'needs a '+m.minHotend+' °C hotend');
+    if(m.id!=='tpu'&&m.hdt<T) blocks.push(isAr()?'الحرارة: مصنّف حتى '+m.hdt+' °م وأنت تحتاج '+T+' °م':'heat: rated '+m.hdt+' °C, you need '+T+' °C');
+    if(L.includes('sustained')){
+      if(m.struct==='Amorphous'&&m.tg<T+15) blocks.push(isAr()?'سيزحف — في بوليمر غير متبلور تمثّل Tg '+m.tg+' °م سقف التشغيل':'would creep — for an amorphous polymer Tg '+m.tg+' °C is the service ceiling');
+      else if(m.struct!=='Amorphous'&&m.hdt&&m.hdt<T+15) blocks.push(isAr()?'هامش غير كافٍ لتحمّل حِمل دائم عند '+T+' °م':'too little margin to hold a constant load at '+T+' °C');
+    }
+    if(s.uv==='sun'&&m.uv<4) blocks.push(isAr()?'غير ثابت تحت الشمس المباشرة':'not UV-stable for constant sun');
+    if(s.uv==='occ'&&m.uv<3) blocks.push(isAr()?'ثبات ضعيف تجاه الأشعة فوق البنفسجية':'poor UV stability');
+    if(C.k&&m[C.k]<4) blocks.push(isAr()?'ضعيف أمام '+arOpt(C.id):'weak against '+C.label.toLowerCase());
+    if(A.insulate&&m.fiber==='CF') blocks.push(isAr()?'ألياف الكربون توصّل الكهرباء':'carbon fibre conducts electricity');
+    if(L.includes('wear')&&m.wear<3) blocks.push(isAr()?'مقاومة تآكل ضعيفة':'poor wear resistance');
+    if(L.some(l=>RIGID.includes(l))&&m.modulus<500) blocks.push(isAr()?'ليّن جداً ولا يحفظ شكله تحت الحِمل':'too soft to hold shape under load');
+    if(L.includes('flex')&&m.elong<25) blocks.push(isAr()?'هشّ جداً على الانثناء المتكرر':'too brittle to flex repeatedly');
+    if(s.contact==='food'&&m.food<3) blocks.push(isAr()?'غير مناسب للتلامس الغذائي':'not suitable for food contact');
+    if(s.contact==='skin'&&m.food<2) blocks.push(isAr()?'غير مناسب لتلامس الجلد المطوّل':'not suitable for prolonged skin contact');
+    if(m.vent>s.vent) blocks.push((isAr()?'يحتاج ':'needs ')+(isAr()?VENT_L_AR:VENT_L)[m.vent].toLowerCase());
+
+    const ten=Math.round(m.tensile*(of+(1-of)*m.zRatio));
+    const com=Math.round(m.tensile*1.4);
+    const ben=Math.round(m.tensile*1.45*(.65+.35*of));
+    const sub={tension:norm(ten,10,150),compression:norm(com,30,210),
+      bending:.5*norm(ben,15,220)+.5*norm(m.modulus,80,MAX.modulus),
+      impact:m.tough/10,cyclic:(m.fatigue-1)/4,
+      sustained:.6*((m.creep-1)/4)+.4*norm(m.tg-T,0,120),
+      wear:(m.wear-1)/4,flex:.5*norm(m.elong,10,550)+.5*((m.fatigue-1)/4)};
+    const ls=L.length?L.reduce((a,k)=>a+sub[k],0)/L.length
+      :.35*norm(m.tensile,25,150)+.35*(m.tough/10)+.3*norm(m.modulus,80,MAX.modulus);
+    const ease=(6-m.diff)/5, cheap=1-norm((m.cost[0]+m.cost[1])/2,20,200);
+    const score=W.l*ls+W.e*ease+W.c*cheap
+      +(s.uv!=='none'?.3*Math.pow(Math.max(0,m.uv-2)/3,2):0)
+      +(C.k?.2*Math.pow(Math.max(0,m[C.k]-2)/3,2):0)
+      +(s.place==='out'?-.12*((m.hygro-1)/4):0);
+
+    if(L.includes('tension')) why.push(isAr()?'مقاومة الشد الفعلية في اتجاهك: '+ten+' ميجاباسكال':'Effective tensile in your orientation: '+ten+' MPa');
+    if(L.includes('compression')) why.push(isAr()?'نحو '+com+' ميجاباسكال تحت الضغط — التصاق الطبقات لا يكاد يؤثر هنا':'≈'+com+' MPa in compression — layer bonding barely matters here');
+    if(L.includes('bending')) why.push(isAr()?'الانحناء: نحو '+ben+' ميجاباسكال بصلابة '+m.modulus+' ميجاباسكال':'Bending: ≈'+ben+' MPa at '+m.modulus+' MPa stiffness');
+    if(L.includes('impact')&&m.tough>=6) why.push(isAr()?'متين — '+m.impact+' كيلوجول/م² محزوز، ينثني ولا يتشظى':'Tough — '+m.impact+' kJ/m² notched, it yields rather than shatters');
+    if(L.includes('cyclic')&&m.fatigue>=4) why.push(isAr()?'عمر ممتاز تحت الاهتزاز المتكرر':'Strong fatigue life under vibration');
+    if(L.includes('sustained')&&m.creep>=4) why.push(m.struct==='Amorphous'
+      ?isAr()?'يقاوم الزحف، وTg أعلى من حرارة التشغيل بـ'+(m.tg-T)+' °م':'Resists creep, with Tg '+(m.tg-T)+' °C above service'
+      :isAr()?'يقاوم الزحف — الطور البلوري يحمل الحِمل فوق Tg بكثير':'Resists creep — the crystalline phase carries load well above Tg');
+    if(L.includes('wear')&&m.wear>=4) why.push(isAr()?'احتكاك منخفض ومقاوم للتآكل':'Low friction and abrasion resistant');
+    if(L.includes('flex')&&m.elong>=100) why.push(isAr()?'ينثني دون كلل — استطالة '+m.elong+'٪ عند الكسر':'Flexes without fatiguing — '+m.elong+'% elongation at break');
+    if(T>=80&&m.hdt) why.push(isAr()?'مقاومة حرارة '+m.hdt+' °م — بهامش '+(m.hdt-T)+' °م':'HDT '+m.hdt+' °C — '+(m.hdt-T)+' °C of margin');
+    if(s.uv==='sun'&&m.uv===5) why.push(isAr()?'ثابت فعلياً تحت الشمس المباشرة لسنوات':'Genuinely UV-stable for years of direct sun');
+    if(C.k&&m[C.k]===5) why.push(isAr()?'مقاومة ممتازة لـ'+arOpt(C.id):'Excellent resistance to '+C.label.toLowerCase());
+    if(A.insulate&&m.fiber==='GF') why.push(isAr()?'الألياف الزجاجية تعزل — آمنة قرب الأجزاء الحيّة':'Glass fibre insulates — safe near live parts');
+    if(s.contact==='food'&&m.food>=4) why.push(isAr()?'من أفضل خيارات التلامس الغذائي — '+FOOD_L_AR[m.food]:'Among the best food-contact options — '+FOOD_L[m.food].toLowerCase());
+    if(m.fume<=1) why.push(isAr()?'انبعاثات منخفضة — هواء الغرفة يكفي غالباً':'Low emissions — room air is usually enough');
+    if(m.diff<=2&&s.level==='light') why.push(isAr()?'سهل الطباعة ولا يحتاج عتاداً خاصاً':'Prints easily, no special hardware');
+
+    const zp=Math.round(m.zRatio*100);
+    if(zp<45&&(L.includes('tension')||L.includes('bending')))
+      warns.push(isAr()?'وجّه مسار الحِمل في المستوى XY — عبر الطبقات لا يحتفظ إلا بـ'+zp+'٪':'Orient the load path into XY — across layers it holds only '+zp+'%');
+    if(m.anneal) warns.push(isAr()?'يجب معالجته حرارياً لبلوغ الأرقام المذكورة':'Must be annealed to reach the quoted numbers');
+    if(m.dry==='Required') warns.push(isAr()?'جفّف الفتيلة قبل الطباعة':'Dry the filament before printing');
+    if(s.place==='out'&&m.hygro>=5) warns.push(isAr()?'يمتص الرطوبة أثناء الخدمة — اعزل القطعة أو اطلِها':'Absorbs moisture in service — seal or coat the part');
+    if(m.enc===2) warns.push(isAr()?'يحتاج حاضنة مسخّنة':'Needs a heated enclosure');
+    if(m.hard) warns.push(isAr()?'كاشط — يتطلب فوهة مقسّاة':'Abrasive — hardened nozzle required');
+    if(m.fume>=4) warns.push((isAr()?'خطورة أبخرة عالية — ':'High fume risk — ')+xf(m,'vo',m.voc));
+    if(s.contact==='food'&&m.food>=3) warns.push(isAr()
+      ?'استخدم فوهة فولاذية: النحاس يحتوي رصاصاً، وخطوط الطبقات لا تُعقَّم'
+      :'Use a steel nozzle: brass contains lead, and layer lines cannot be sanitised');
+
+    return Object.assign({},m,{score:Math.max(0,score),blocks,warns,why,ten,com,ben});
+  }).sort((a,b)=>(a.blocks.length-b.blocks.length)||(b.score-a.score));
+}
+
+/* ================= state ================= */
+const S={tab:'finder',app:'auto_ext',place:'out',uv:'sun',temp:80,chem:'none',
+  loads:['impact','cyclic'],level:'mod',orient:'un',rig:'enc',contact:'nofood',vent:2,
+  cmp:['petg','pa6cf','ppacfcore','ppscf'],struct:'All',fiber:'All',open:null};
+
+/* ================= components ================= */
+const chips=(opts,cur,act,multi)=>'<div class="chips">'+opts.map(o=>{
+  const on=multi?cur.includes(o.id):cur===o.id;
+  return '<button class="chip" role="button" aria-pressed="'+on+'" data-act="'+act+'" data-v="'+o.id+'">'+esc(arOpt(o.id)!==o.id?arOpt(o.id):o.label)+'</button>';
+}).join('')+'</div>';
+
+function bar(label,val,max,color,unit,sub,note){
+  const na=val===null||val===0&&unit===' °C';
+  const w=na?0:Math.max(2,val/max*100), sw=sub!=null?sub/max*100:null;
+  return '<div class="bar"><div class="bar-h"><span class="bar-l">'+esc(label)+'</span>'+
+    '<span class="bar-v">'+(na?'n/a':val)+(na?'':'<em>'+unit+'</em>')+'</span></div>'+
+    '<div class="trk">'+
+      '<div class="'+(sw!=null?'f-ghost':'f-solid')+'" style="--w:'+w+'%;background:'+color+'"></div>'+
+      (sw!=null?'<div class="f-solid" style="--w:'+sw+'%;background:'+color+'"></div>'+
+                '<div class="tick" style="--w:'+sw+'%"></div>':'')+
+    '</div>'+
+    (note?'<div class="bar-s">'+t('acrossL')+' <b>'+sub+'</b> MPa · '+Math.round(sub/val*100)+'% '+t('ofXY')+'</div>':'')+
+  '</div>';
+}
+const meter=n=>'<span class="mtr">'+[0,1,2,3,4].map(i=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</span>';
+const tag=(k,txt)=>{const c={a:'--amor',c:'--cryst',b:'--blockc',f:'--t2',t:'--t1'}[k];
+  return '<span class="tg" style="color:var('+c+');border-color:var('+c+');background:color-mix(in srgb,var('+c+') 11%,transparent)">'+esc(txt)+'</span>';};
+
+/* ================= view: finder ================= */
+function vFinder(){
+  const r=findMaterials(S), ok=r.filter(m=>!m.blocks.length), no=r.filter(m=>m.blocks.length).slice(0,6);
+  const top=ok.slice(0,8), best=top.length?top[0].score:1;
+  const q=(n,label,body,hint)=>'<div class="fq"><div class="fq-h"><span class="fq-n">'+n+
+    '</span><span class="fq-q">'+label+'</span></div>'+body+(hint?'<div class="hint">'+hint+'</div>':'')+'</div>';
+
+  let h='<div class="view"><p class="lede">'+t('finderLede')+'</p>';
+  h+=q(1,t('q')[0],chips(APPS,S.app,'app'),t('hintApp'));
+  h+=q(2,t('q')[1],chips(PLACES,S.place,'place'));
+  h+=q(3,t('q')[2],chips(UVS,S.uv,'uv'));
+  h+=q(4,t('q')[3],chips(TEMPS,S.temp,'temp'));
+  h+=q(5,t('q')[4],chips(CHEMS,S.chem,'chem'));
+  h+=q(6,t('q')[5],chips(CONTACTS,S.contact,'contact'));
+  h+=q(7,t('q')[6],chips(LOADS,S.loads,'loads',true),t('hintLoads'));
+  h+=q(8,t('q')[7],chips(ORIENTS,S.orient,'orient'),t('hintOrient'));
+  h+=q(9,t('q')[8],chips(LEVELS,S.level,'level'));
+  h+=q(10,t('q')[9],chips(VENTS,S.vent,'vent'),t('hintVent'));
+  h+=q(11,isAr()?'ماذا تستطيع طابعتك؟':'What can your printer do?',chips(RIGS,S.rig,'rig'));
+  h+='<div class="rule"></div>';
+
+  if(!ok.length){
+    h+='<div class="empty">'+(S.vent===0?t('noVent'):t('none'))+'</div>';
+  }else{
+    h+='<div class="res-hd"><div class="lab" style="margin:0">'+t('ranked')+'</div>'+
+       '<span class="hint" style="margin:0">'+ok.length+' '+t('of')+' '+M.length+' — '+t('survive')+'</span></div>';
+    top.forEach((m,i)=>{
+      const c=tc(m.nozzle[1]);
+      h+='<div class="res'+(i===0?' res-1':'')+'">'+
+        '<button class="res-top" data-act="open" data-v="'+m.id+'">'+
+          '<span class="res-n">'+String(i+1).padStart(2,'0')+'</span>'+
+          '<span class="res-b"><span class="res-name ltr" style="color:'+c+'">'+esc(m.name)+'</span>'+
+          '<span class="res-meta">'+m.tensile+' MPa · '+m.modulus+' MPa · '+(m.hdt?m.hdt+' °C':'n/a')+' · '+m.density+' g/cm³</span>'+
+          '<span class="res-bar"><i style="--w:'+Math.round(m.score/best*100)+'%;background:'+c+'"></i></span></span>'+
+          '<span class="res-ar">›</span></button>'+
+        (i<5?'<div class="res-why">'+m.why.slice(0,3).map(w=>'<div class="wy">'+esc(w)+'</div>').join('')+
+             m.warns.slice(0,2).map(w=>'<div class="wn">'+esc(w)+'</div>').join('')+'</div>':'')+
+      '</div>';
+    });
+    if(no.length) h+='<div class="blocked"><div class="lab">'+t('ruledOut')+'</div>'+
+      no.map(m=>'<div class="brow"><span>'+esc(m.name)+'</span><em>'+esc(m.blocks[0])+'</em></div>').join('')+'</div>';
+    h+='<div class="thesis" style="margin-top:24px"><div class="lab">'+t('whyTC')+'</div>'+
+      '<p>'+t('whyTCb')+'</p></div>';
+  }
+  return h+'</div>';
+}
+
+/* ================= view: classes ================= */
+function vClasses(){
+  let h='<div class="view"><div class="thesis"><div class="lab">'+t('splitT')+'</div><p>'+t('splitB')+'</p></div>';
+  h+='<div class="cmp">'+
+    '<div class="col" style="border-top-color:'+SC['Amorphous']+'"><h5 style="color:'+SC['Amorphous']+'">'+t('amor')+'</h5>'+
+    '<div class="csub">'+t('amorSub')+'</div><ul>'+t('amorL').map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
+    '<div class="cex">PETG · ABS · ASA · PC · PMMA · PEI</div></div>'+
+    '<div class="col" style="border-top-color:'+SC['Semi-crystalline']+'"><h5 style="color:'+SC['Semi-crystalline']+'">'+t('cryst')+'</h5>'+
+    '<div class="csub">'+t('crystSub')+'</div><ul>'+t('crystL').map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
+    '<div class="cex">PLA · PA · PP · POM · PET · PEEK · PPS · PPA</div></div></div>';
+  h+='<div class="thesis"><div class="lab">'+t('fibT')+'</div><p>'+t('fibB')+'</p>'+
+    '<div class="pair"><div><b>PA6-CF</b> 109 MPa · 5460 MPa · 11 kJ/m²</div>'+
+    '<div><b>PA6-GF</b> 80 MPa · 4200 MPa · 10 kJ/m²</div></div></div>';
+  h+='<div class="thesis" style="border-color:rgba(242,112,91,.3)"><div class="lab" style="color:var(--bad)">'+t('safeT')+'</div><p>'+t('safeB')+'</p></div>';
+  [['Amorphous','None'],['Amorphous','CF'],['Amorphous','GF'],
+   ['Semi-crystalline','None'],['Semi-crystalline','CF'],['Semi-crystalline','GF'],
+   ['Block','None']].forEach(function(g){
+    var st=g[0],fb=g[1];
+    var list=M.filter(function(m){return m.struct===st&&m.fiber===fb;});
+    if(!list.length) return;
+    h+='<div class="grp"><div class="grp-h"><span class="dot" style="background:'+SC[st]+'"></span>'+
+      '<span class="grp-t">'+(st==='Block'?t('blockc'):st==='Amorphous'?t('amor'):t('cryst'))+'</span>'+
+      '<span class="grp-f" style="color:'+FC[fb]+'">'+(fb==='None'?t('unfilled'):fb==='CF'?t('cf'):t('gf'))+'</span>'+
+      '<span class="grp-n">'+list.length+'</span></div>';
+    list.forEach(function(m){h+='<button class="mini" data-act="open" data-v="'+m.id+'">'+
+      '<span class="mini-n" style="color:'+tc(m.nozzle[1])+'"><span class="ltr">'+esc(m.name)+'</span></span>'+
+      '<span class="mini-d">Tg '+m.tg+' °C'+(m.tm?' · Tm '+m.tm+' °C':' · '+t('noTm')+' Tm')+' · '+arOpt(m.clarity)+
+      (m.anneal?' · '+(isAr()?'يُعالَج حرارياً':'anneals'):'')+'</span></button>';});
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
+/* ================= view: compare ================= */
+function vCompare(){
+  const sel=M.filter(m=>S.cmp.includes(m.id));
+  let h='<div class="view"><p class="lede">'+t('cmpLede')+'</p>';
+  h+='<div class="chips" style="margin-bottom:20px">'+M.map(m=>
+    '<button class="chip" aria-pressed="'+S.cmp.includes(m.id)+'" data-act="cmp" data-v="'+m.id+'">'+esc(m.name)+'</button>').join('')+'</div>';
+  if(!sel.length) return h+'<div class="empty">'+t('selectOne')+'</div></div>';
+  const sec=(title,unit,fn)=>{let s='<section class="chart"><h4>'+title+' <em>'+unit+'</em></h4>';
+    sel.forEach(m=>s+=fn(m)); return s+'</section>';};
+  h+=sec(t('charts')[0],t('chartsU')[0],m=>
+    bar(m.name,m.tensile,MAX.tensile,tc(m.nozzle[1]),' MPa',Math.round(m.tensile*m.zRatio),true));
+  h+=sec(t('charts')[1],t('chartsU')[1],m=>bar(m.name,m.modulus,MAX.modulus,tc(m.nozzle[1]),' MPa'));
+  h+=sec(t('charts')[2],t('chartsU')[2],m=>bar(m.name,m.tough,MAX.tough,tc(m.nozzle[1]),'/10'));
+  h+=sec(t('charts')[3],t('chartsU')[3],m=>bar(m.name,m.hdt,MAX.hdt,tc(m.nozzle[1]),' °C'));
+  h+=sec(t('charts')[4],t('chartsU')[4],m=>bar(m.name,m.tg,MAX.tg,tc(m.nozzle[1]),' °C'));
+  h+=sec(t('charts')[5],t('chartsU')[5],m=>bar(m.name,m.density,MAX.density,tc(m.nozzle[1]),' g/cm³'));
+  h+=sec(t('charts')[6],t('chartsU')[6],m=>bar(m.name,Math.round((m.cost[0]+m.cost[1])/2),MAX.cost,tc(m.nozzle[1]),' $'));
+  h+=scatter(sel);
+  return h+'</div>';
+}
+function scatter(sel){
+  const W=330,H=250,P=36, xs=v=>P+v/MAX.hdt*(W-P-14), ys=v=>H-P-v/MAX.tensile*(H-P-18);
+  let s='<section class="chart"><h4>'+t('charts')[7]+' <em>'+t('chartsU')[7]+'</em></h4>'+
+    '<svg viewBox="0 0 '+W+' '+H+'" class="scatter" role="img" aria-label="Tensile strength against heat deflection temperature">';
+  [0,65,130,195,260].forEach(t=>{s+='<line x1="'+xs(t)+'" y1="14" x2="'+xs(t)+'" y2="'+(H-P)+'" stroke="rgba(255,255,255,.06)"/>'+
+    '<text x="'+xs(t)+'" y="'+(H-P+14)+'" font-family="var(--mono)" font-size="8" fill="#5C6A7D" text-anchor="middle">'+t+'</text>';});
+  [0,40,80,120,160].forEach(v=>{s+='<line x1="'+P+'" y1="'+ys(v)+'" x2="'+(W-14)+'" y2="'+ys(v)+'" stroke="rgba(255,255,255,.06)"/>'+
+    '<text x="'+(P-7)+'" y="'+(ys(v)+3)+'" font-family="var(--mono)" font-size="8" fill="#5C6A7D" text-anchor="end">'+v+'</text>';});
+  M.filter(m=>m.hdt>0).forEach(m=>{const on=sel.some(x=>x.id===m.id);
+    s+='<circle cx="'+xs(m.hdt)+'" cy="'+ys(m.tensile)+'" r="'+(3+m.tough*.45)+'" fill="'+tc(m.nozzle[1])+'" opacity="'+(on?.9:.13)+'"/>';});
+  sel.filter(m=>m.hdt>0).forEach(m=>{s+='<text x="'+(xs(m.hdt)+7+m.tough*.45)+'" y="'+(ys(m.tensile)+3)+
+    '" font-family="var(--mono)" font-size="8.5" font-weight="600" fill="#E7EBF1">'+esc(m.name)+'</text>';});
+  s+='<text x="'+W/2+'" y="'+(H-4)+'" font-family="var(--mono)" font-size="8" fill="#5C6A7D" text-anchor="middle">heat deflection °C →</text>';
+  return s+'</svg></section>';
+}
+
+/* ================= view: data ================= */
+function vData(){
+  const list=M.filter(m=>(S.struct==='All'||m.struct===S.struct)&&(S.fiber==='All'||m.fiber===S.fiber));
+  let h='<div class="view"><div class="lab">'+t('structure')+'</div>'+
+    chips(['All','Amorphous','Semi-crystalline','Block'].map(x=>({id:x,label:x})),S.struct,'struct')+
+    '<div class="lab" style="margin-top:16px">'+t('reinf')+'</div>'+
+    chips([{id:'All',label:'All'},{id:'None',label:'Unfilled'},{id:'CF',label:'CF'},{id:'GF',label:'GF'}],S.fiber,'fiber')+
+    '<div class="count">'+list.length+' '+t('of')+' '+M.length+' '+t('materials')+'</div>';
+  if(!list.length) h+='<div class="empty">'+t('noMatch')+'</div>';
+  list.forEach(m=>h+=card(m));
+  return h+'</div>';
+}
+function card(m){
+  const c=tc(m.nozzle[1]), open=S.open===m.id;
+  const R=(k,v,n)=>'<div class="sr"><span class="sk">'+k+'</span><span class="sv">'+v+'</span><span class="sn">'+n+'</span></div>';
+  const SP=t('spec'), SN=t('specN'), PR=t('pr');
+  let h='<div class="card"><button class="card-t" data-act="open" data-v="'+m.id+'" aria-expanded="'+open+'"><div>'+
+    '<div class="card-n" style="color:'+c+'"><span class="ltr">'+esc(m.name)+'</span></div>'+
+    '<div class="card-f">'+esc(mf(m,'f'))+'</div>'+
+    '<div class="tgs">'+tag(m.struct==='Amorphous'?'a':m.struct==='Block'?'b':'c',
+      m.struct==='Block'?t('blockc'):m.struct==='Amorphous'?t('amor'):t('cryst'))+
+    (m.fiber!=='None'?tag('f',m.fiber):'')+
+    ((m.clarity==='Clear'||m.clarity==='Clear-capable')?tag('t',arOpt(m.clarity)):'')+
+    (m.food>=4?tag('t',isAr()?'غذائي':'food ok'):'')+
+    (m.fume>=4?'<span class="tg" style="color:var(--bad);border-color:var(--bad);background:rgba(242,112,91,.1)">'+(isAr()?'أبخرة':'fumes')+'</span>':'')+
+    '</div></div><span class="crt">'+(open?'−':'+')+'</span></button>';
+  if(!open) return h+'</div>';
+  h+='<div class="card-b"><div class="spec">'+
+    R(SP[0],m.tensile+' MPa',SN[0]+' '+m.tLo+'–'+m.tHi)+
+    R(SP[1],'≈'+Math.round(m.tensile*m.zRatio)+' MPa',Math.round(m.zRatio*100)+'% '+SN[1])+
+    R(SP[2],m.modulus+' MPa',m.id==='tpu'?t('flexNote'):SN[2])+
+    R(SP[3],m.impact+' kJ/m²',SN[3])+R(SP[4],m.elong+'%',SN[4])+
+    R(SP[5],m.tg+' °C',SN[5])+
+    R(SP[6],m.tm?m.tm+' °C':t('noTm'),m.tm?SN[6]:t('amorphNoTm'))+
+    R(SP[7],m.hdt?m.hdt+' °C':'n/a',SN[7])+
+    R(SP[8],m.density+' g/cm³',SN[8])+
+    R(SP[9],arOpt(m.clarity),m.struct==='Amorphous'?t('noCrys'):t('crys'))+
+    R(SP[10],'$'+m.cost[0]+'–'+m.cost[1]+'/kg',SN[9])+'</div>';
+  h+='<div class="blk"><div class="lab">'+t('printReq')+'</div><div class="pg">'+
+    '<span><b>'+PR[0]+'</b>'+m.nozzle[0]+'–'+m.nozzle[1]+' °C</span>'+
+    '<span><b>'+PR[1]+'</b>'+m.bed[0]+'–'+m.bed[1]+' °C</span>'+
+    '<span><b>'+PR[2]+'</b>'+(m.fan[0]===m.fan[1]?m.fan[0]+'%':m.fan[0]+'–'+m.fan[1]+'%')+'</span>'+
+    '<span><b>'+PR[3]+'</b>'+t('encL')[m.enc]+'</span>'+
+    '<span><b>'+PR[4]+'</b>'+(m.hard?t('hardened'):t('brass'))+'</span>'+
+    '<span><b>'+PR[5]+'</b>'+arOpt(m.dry)+'</span>'+
+    '<span><b>'+PR[6]+'</b>'+meter(m.diff)+'</span>'+
+    '<span><b>'+PR[7]+'</b>'+meter(m.uv)+'</span></div>'+
+    '<p style="margin-top:11px"><b>'+t('coolingL')+'</b> '+esc(xf(m,'fn',m.fanNote))+'</p></div>';
+  h+='<div class="blk"><div class="anl'+(m.anneal?'':' anl-no')+'"><div class="lab">'+t('heatT')+'</div>'+
+    (m.anneal?'<p><b>'+t('annealAt')+' '+esc(xf(m,'an',m.anneal).temp)+'.</b> '+esc(xf(m,'an',m.anneal).gain)+'</p>'
+      :'<p>'+t('noAnneal')+' '+(m.struct==='Amorphous'?t('noAnnealA'):t('noAnnealC'))+'</p>')+'</div></div>';
+  /* ---------- safety: food contact + emissions ---------- */
+  const FL=isAr()?FOOD_L_AR:FOOD_L, VL=isAr()?VENT_L_AR:VENT_L;
+  const fc=m.food>=4?'var(--ok)':m.food>=2?'var(--warn)':'var(--bad)';
+  const mc=m.fume>=4?'var(--bad)':m.fume>=3?'var(--warn)':'var(--ok)';
+  h+='<div class="blk"><div class="anl'+(m.fume>=4?'':' anl-no')+'" style="'+(m.fume>=4?'background:rgba(242,112,91,.07);border-color:rgba(242,112,91,.28)':'')+'">'+
+    '<div class="lab">'+t('safety')+'</div><div class="pg" style="margin-bottom:11px">'+
+    '<span><b>'+t('foodC')+'</b><span style="color:'+fc+'">'+FL[m.food]+'</span></span>'+
+    '<span><b>'+t('fumeR')+'</b><span style="color:'+mc+'">'+m.fume+'/5</span></span>'+
+    '<span><b>'+t('mainVoc')+'</b>'+esc(xf(m,'vo',m.voc))+'</span>'+
+    '<span><b>'+t('ventN')+'</b>'+VL[m.vent]+'</span></div>'+
+    '<p>'+esc(xf(m,'fd',m.fd))+'</p><p>'+esc(xf(m,'fm',m.fm))+'</p></div></div>';
+  h+='<div class="blk"><div class="lab">'+t('bonding')+'</div><p><b>'+t('use')+'</b> '+esc(xf(m,'g',m.glue))+'</p>'+
+    (m.glueAvoid!=='—'?'<p class="warnt"><b>'+t('watch')+'</b> '+esc(xf(m,'ga',m.glueAvoid))+'</p>':'')+'</div>';
+  h+='<div class="pc"><div><div class="lab lab-p">'+t('strengths')+'</div><ul>'+
+    mf(m,'p').map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul></div>'+
+    '<div><div class="lab lab-c">'+t('weaknesses')+'</div><ul>'+
+    mf(m,'c').map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul></div></div>';
+  h+='<div class="tags"><div class="tl"><b>'+t('goodFor')+'</b>'+mf(m,'u').map(u=>'<em>'+esc(u)+'</em>').join('')+'</div>'+
+    '<div class="tl tl-no"><b>'+t('avoidL')+'</b>'+mf(m,'a').map(u=>'<em>'+esc(u)+'</em>').join('')+'</div></div>';
+  h+='<p class="verdict">'+esc(mf(m,'n'))+'</p>';
+  h+='<div class="blk"><div class="lab">'+t('brandData')+'<span class="conf c-'+m.conf+'">'+arOpt(m.conf)+' '+t('conf')+'</span></div>'+
+    m.brands.map(b=>'<div class="br"><div class="br-n"><b>'+esc(b.b)+'</b> '+esc(b.p)+'</div>'+
+      '<div class="br-v'+(L==='ar'&&AR_BV[b.v]?'':' ltr')+'">'+esc(bv(b.v))+'</div><div class="br-m">'+esc(bm(b.m))+'</div></div>').join('')+'</div>';
+  return h+'</div></div>';
+}
+
+/* ================= render + events ================= */
+const TABS=[['finder','Finder'],['classes','Classes'],['compare','Compare'],['data','Data']];
+function applyChrome(){
+  const h=document.querySelector('.hd');
+  h.querySelector('.eyebrow').textContent=t('eyebrow');
+  h.querySelector('h1').textContent=t('title');
+  h.querySelector('.sub').textContent=t('sub');
+  const ax=h.querySelectorAll('.ramp-ax span');
+  ax[0].textContent=t('rampL'); ax[1].textContent=t('rampM'); ax[2].textContent=t('rampR');
+  let lb=h.querySelector('.langbtn');
+  if(!lb){lb=document.createElement('button'); lb.className='langbtn';
+    lb.setAttribute('data-act','lang'); h.appendChild(lb);}
+  lb.setAttribute('data-v',L==='ar'?'en':'ar');
+  lb.textContent=T[L].lang;
+  const f=document.querySelector('.ft');
+  f.innerHTML='<div class="lab">'+t('footT')+'</div>'+t('foot').map(p=>'<p>'+p+'</p>').join('');
+}
+function render(){
+  document.getElementById('tabs').innerHTML=TABS.map(([id],i)=>
+    '<button class="tab" role="tab" aria-selected="'+(S.tab===id)+'" data-act="tab" data-v="'+id+'">'+t('tabs')[i]+'</button>').join('');
+  document.getElementById('app').innerHTML=
+    S.tab==='finder'?vFinder():S.tab==='classes'?vClasses():S.tab==='compare'?vCompare():vData();
+}
+document.body.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act, v=b.dataset.v;
+  if(a==='tab'){S.tab=v; window.scrollTo({top:0,behavior:'smooth'});}
+  else if(a==='app'){S.app=v; Object.assign(S,APPS.find(x=>x.id===v).pre);}
+  else if(a==='temp') S.temp=+v;
+  else if(a==='vent') S.vent=+v;
+  else if(a==='loads') S.loads=S.loads.includes(v)?S.loads.filter(x=>x!==v):S.loads.concat(v);
+  else if(a==='cmp') S.cmp=S.cmp.includes(v)?S.cmp.filter(x=>x!==v):(S.cmp.length>=4?S.cmp:S.cmp.concat(v));
+  else if(a==='open'){const was=S.open===v; S.open=was?null:v;
+    if(S.tab!=='data'){S.tab='data'; S.open=v; S.struct='All'; S.fiber='All';}}
+  else if(a==='lang'){setLang(v); return;}
+  else S[a]=v;
+  render();
+  if(a==='open'&&S.open){requestAnimationFrame(()=>{
+    const el=document.querySelector('[data-act="open"][data-v="'+S.open+'"]');
+    if(el) el.scrollIntoView({block:'center',behavior:'smooth'});});}
+});
+document.documentElement.lang=L; document.documentElement.dir=T[L].dir;
+applyChrome();
+render();
+</script>
+</body>
+</html>
